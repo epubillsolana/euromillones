@@ -42,10 +42,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ball{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;}
 .ball.our-main{background:var(--blue);color:#fff;}
 .ball.our-star{background:var(--gold);color:#fff;width:40px;height:40px;font-size:14px;}
-.ball.draw-main{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
-.ball.draw-star{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);width:40px;height:40px;font-size:14px;}
-.ball.hit{background:var(--blue);color:#fff;box-shadow:0 0 0 3px rgba(12,68,124,.25);}
-.ball.star-hit{background:var(--gold);color:#fff;box-shadow:0 0 0 3px rgba(186,117,23,.25);}
+.ball.hit{background:var(--blue);color:#fff;box-shadow:0 0 0 4px #fff, 0 0 0 7px var(--blue);transform:scale(1.15);font-size:16px;}
+.ball.star-hit{background:var(--gold);color:#fff;box-shadow:0 0 0 4px #fff, 0 0 0 7px var(--gold);transform:scale(1.15);font-size:15px;}
+.ball.draw-main{background:var(--surface2);color:var(--text3);border:1px solid var(--border2);opacity:0.5;}
+.ball.draw-star{background:var(--surface2);color:var(--text3);border:1px solid var(--border2);width:40px;height:40px;font-size:14px;opacity:0.5;}
 .star-sep{font-size:12px;color:var(--text3);}
 .btn{width:100%;padding:14px;border-radius:var(--radius-sm);font-size:16px;font-weight:600;cursor:pointer;border:none;margin-top:8px;transition:opacity .15s,transform .1s;}
 .btn:active{transform:scale(.98);}
@@ -490,6 +490,13 @@ function checkPrize(){
   document.getElementById('prize-sub').textContent=
     hitM.length===0&&hitS.length===0?'Ningún acierto. ¡Suerte el próximo sorteo!':`Núm: ${hitM.length>0?hitM.join(', '):'—'}  ·  Estrellas: ${hitS.length>0?hitS.join(', '):'—'}`;
   const hb=document.getElementById('hit-balls'); hb.innerHTML='';
+  // Label de aciertos
+  const lbl=document.createElement('div');
+  lbl.style.cssText='width:100%;text-align:center;font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.05em;text-transform:uppercase;';
+  const aciertosText=hitM.length===0&&hitS.length===0?'Sin aciertos':`✅ ${hitM.length} número${hitM.length!==1?'s':''} + ${hitS.length} estrella${hitS.length!==1?'s':''}`;
+  lbl.textContent=aciertosText;
+  hb.appendChild(lbl);
+  // Bolas del sorteo — las que coinciden resaltan, las que no se atenúan
   [...numeros].sort((a,b)=>a-b).forEach(n=>{const b=document.createElement('div');b.className='ball '+(hitM.includes(n)?'hit':'draw-main');b.textContent=n;hb.appendChild(b);});
   const sep=document.createElement('span');sep.className='star-sep';sep.textContent='⭐';hb.appendChild(sep);
   [...estrellas].sort((a,b)=>a-b).forEach(n=>{const b=document.createElement('div');b.className='ball '+(hitS.includes(n)?'star-hit':'draw-star');b.textContent=n;hb.appendChild(b);});
@@ -502,7 +509,14 @@ function checkPrize(){
     if(!isNaN(num)) document.getElementById('real-amount').value=num;
   }
   const emojiMsg=prize.cat==='big'?'🏆':prize.cat==='medium'?'🎉':prize.cat==='small'?'🍀':'😅';
-  const msg=`${emojiMsg} Euromillones ${fecha}\n\n🎱 Nuestros números:\n${OUR_MAIN.join(' · ')}  ⭐ ${OUR_STARS.join(' · ')}\n\n🔢 Sorteo premiado:\n${[...numeros].sort((a,b)=>a-b).join(' · ')}  ⭐ ${[...estrellas].sort((a,b)=>a-b).join(' · ')}\n\n✅ Aciertos: ${hitM.length>0?hitM.join(', '):'ninguno'}\n⭐ Estrellas: ${hitS.length>0?hitS.join(', '):'ninguna'}\n\n🏅 Resultado: ${prize.label}${prize.approx?'\n💶 Premio aprox.: '+prize.approx:''}\n\n💳 Paga esta ronda: ${payer.name}\n💸 Bizum de 4€ a ${payer.name}:\n${others.map(o=>'   · '+o).join('\n')}`;
+  // Construir línea de números resaltando aciertos con 🔵 y no-aciertos con ⚪
+  const numLine=[...numeros].sort((a,b)=>a-b).map(n=>hitM.includes(n)?`🔵${n}`:`⚪${n}`).join(' ');
+  const starLine=[...estrellas].sort((a,b)=>a-b).map(n=>hitS.includes(n)?`🟡${n}`:`⚪${n}`).join(' ');
+  // Resumen de aciertos
+  const resumen=hitM.length===0&&hitS.length===0
+    ?'❌ Sin aciertos esta vez'
+    :`✅ ${hitM.length>0?hitM.map(n=>`*${n}*`).join(', '):'—'} ${hitS.length>0?'⭐'+hitS.map(n=>`*${n}*`).join(', '):''}`;
+  const msg=`${emojiMsg} *Euromillones ${fecha}*\n\n🎱 Nuestros números:\n${OUR_MAIN.join(' · ')}  ⭐ ${OUR_STARS.join(' · ')}\n\n🔢 Sorteo premiado:\n${numLine}  ⭐ ${starLine}\n\n${resumen}\n🏅 ${prize.label}${prize.approx?' · '+prize.approx:''}\n\n💳 Paga esta ronda: *${payer.name}*\n💸 Bizum de 4€ a ${payer.name}:\n${others.map(o=>'   · '+o).join('\n')}`;
   document.getElementById('wa-text').textContent=msg; lastWAMsg=msg;
   document.getElementById('result-area').style.display='block';
   setTimeout(()=>document.getElementById('result-area').scrollIntoView({behavior:'smooth',block:'start'}),100);
