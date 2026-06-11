@@ -692,7 +692,7 @@ let swReg = null;
 async function initServiceWorker(){
   if(!('serviceWorker' in navigator)) return null;
   try{
-    swReg = await navigator.serviceWorker.register('/euromillones/sw.js', {scope:'/euromillones/'});
+    swReg = await navigator.serviceWorker.register('./sw.js', {scope:'./'});
     await navigator.serviceWorker.ready;
     return swReg;
   }catch(e){
