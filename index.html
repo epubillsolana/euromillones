@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Euromillones">
 <meta name="theme-color" content="#0C447C">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎰</text></svg>">
 <title>🎰 Euromillones del grupo</title>
 <style>
 :root{
@@ -39,13 +40,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:12px;border:.5px solid var(--border);}
 .card-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;}
 .ball-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:center;}
-.ball{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;}
+.ball{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
 .ball.our-main{background:var(--blue);color:#fff;}
-.ball.our-star{background:var(--gold);color:#fff;width:40px;height:40px;font-size:14px;}
-.ball.hit{background:var(--blue);color:#fff;box-shadow:0 0 0 4px #fff, 0 0 0 7px var(--blue);transform:scale(1.15);font-size:16px;}
-.ball.star-hit{background:var(--gold);color:#fff;box-shadow:0 0 0 4px #fff, 0 0 0 7px var(--gold);transform:scale(1.15);font-size:15px;}
-.ball.draw-main{background:var(--surface2);color:var(--text3);border:1px solid var(--border2);opacity:0.5;}
-.ball.draw-star{background:var(--surface2);color:var(--text3);border:1px solid var(--border2);width:40px;height:40px;font-size:14px;opacity:0.5;}
+.ball.our-star{background:var(--gold);color:#fff;}
+.ball.draw-main{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
+.ball.draw-star{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
+.ball.hit{background:#E8523A;color:#fff;}
+.ball.star-hit{background:#E8523A;color:#fff;}
+.ball.no-hit{background:var(--surface2);color:var(--text3);border:1px solid var(--border2);opacity:0.4;}
 .star-sep{font-size:12px;color:var(--text3);}
 .btn{width:100%;padding:14px;border-radius:var(--radius-sm);font-size:16px;font-weight:600;cursor:pointer;border:none;margin-top:8px;transition:opacity .15s,transform .1s;}
 .btn:active{transform:scale(.98);}
@@ -474,8 +476,9 @@ function checkPrize(){
   const{fecha,numeros,estrellas}=drawData;
   const hitM=OUR_MAIN.filter(n=>numeros.includes(n));
   const hitS=OUR_STARS.filter(n=>estrellas.includes(n));
-  OUR_MAIN.forEach(n=>{const el=document.getElementById('sn-'+n);if(el)el.className='ball '+(hitM.includes(n)?'hit':'draw-main');});
-  OUR_STARS.forEach(n=>{const el=document.getElementById('ss-'+n);if(el)el.className='ball '+(hitS.includes(n)?'star-hit':'draw-star');});
+  // No resaltar en la sección del sorteo, solo en el resultado de abajo
+  OUR_MAIN.forEach(n=>{const el=document.getElementById('sn-'+n);if(el)el.className='ball draw-main';});
+  OUR_STARS.forEach(n=>{const el=document.getElementById('ss-'+n);if(el)el.className='ball draw-star';});
   const prize=getPrize(hitM.length,hitS.length);
   lastPrizeCat=prize.cat;
   const payerIdx=getCurrentPayerIdx(), payer=PEOPLE[payerIdx];
@@ -497,9 +500,9 @@ function checkPrize(){
   lbl.textContent=aciertosText;
   hb.appendChild(lbl);
   // Bolas del sorteo — las que coinciden resaltan, las que no se atenúan
-  [...numeros].sort((a,b)=>a-b).forEach(n=>{const b=document.createElement('div');b.className='ball '+(hitM.includes(n)?'hit':'draw-main');b.textContent=n;hb.appendChild(b);});
+  [...numeros].sort((a,b)=>a-b).forEach(n=>{const b=document.createElement('div');b.className='ball '+(hitM.includes(n)?'hit':'no-hit');b.textContent=n;hb.appendChild(b);});
   const sep=document.createElement('span');sep.className='star-sep';sep.textContent='⭐';hb.appendChild(sep);
-  [...estrellas].sort((a,b)=>a-b).forEach(n=>{const b=document.createElement('div');b.className='ball '+(hitS.includes(n)?'star-hit':'draw-star');b.textContent=n;hb.appendChild(b);});
+  [...estrellas].sort((a,b)=>a-b).forEach(n=>{const b=document.createElement('div');b.className='ball '+(hitS.includes(n)?'hit':'no-hit');b.textContent=n;hb.appendChild(b);});
   // Mostrar opción de añadir al total si hay premio
   document.getElementById('add-to-total-box').style.display=prize.cat!=='none'?'block':'none';
   if(prize.cat!=='none'){
@@ -635,6 +638,7 @@ function buildMembers(){
 
 // ── AVISOS ───────────────────────────────────────────────────────────────────
 function getMyIdx(){return parseInt(localStorage.getItem('em_who')??'-1');}
+
 function getNotifMessage(myIdx){
   const payerIdx=getCurrentPayerIdx(),payer=PEOPLE[payerIdx];
   const others=PEOPLE.filter((_,i)=>i!==payerIdx).map(p=>p.name);
@@ -642,6 +646,7 @@ function getNotifMessage(myIdx){
     return{title:"🎰 ¡Te toca jugar al Euromillones!",body:`Recuerda comprar el boleto esta semana. El grupo te hará el Bizum de 4€ (${others.join(', ')}).`};
   return{title:`💸 Bizum de 4€ a ${payer.name}`,body:`Esta semana juega ${payer.name}. Recuerda hacerle el Bizum de 4€.`};
 }
+
 function updateNotifPreview(myIdx){
   const payerIdx=getCurrentPayerIdx(),payer=PEOPLE[payerIdx];
   const others=PEOPLE.filter((_,i)=>i!==payerIdx).map(p=>p.name);
@@ -654,11 +659,13 @@ function updateNotifPreview(myIdx){
     document.getElementById('prev-biz-text').textContent=`Haz el Bizum de 4€ a ${payer.name} por el boleto de esta semana.`;
   }
 }
+
 function getNextMondays(n=6){
   const dates=[],d=new Date();d.setHours(0,0,0,0);
   while(dates.length<n){d.setDate(d.getDate()+1);if(d.getDay()===1)dates.push(new Date(d));}
   return dates;
 }
+
 function buildScheduleList(){
   const list=document.getElementById('schedule-list');list.innerHTML='';
   const months=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
@@ -668,6 +675,35 @@ function buildScheduleList(){
     list.appendChild(item);
   });
 }
+
+// ── Service Worker ───────────────────────────────────────────────────────────
+let swReg = null;
+
+async function initServiceWorker(){
+  if(!('serviceWorker' in navigator)) return null;
+  try{
+    swReg = await navigator.serviceWorker.register('/euromillones/sw.js', {scope:'/euromillones/'});
+    await navigator.serviceWorker.ready;
+    return swReg;
+  }catch(e){
+    console.warn('SW registration failed:', e);
+    return null;
+  }
+}
+
+async function saveNotifConfigToSW(myIdx){
+  const payerIdx=getCurrentPayerIdx(), payer=PEOPLE[payerIdx];
+  const others=PEOPLE.filter((_,i)=>i!==payerIdx).map(p=>p.name);
+  const nextMonday=getNextMondays(1)[0]; nextMonday.setHours(10,0,0,0);
+  const config={myIdx,payerIdx,payerName:payer.name,others,nextMonday:nextMonday.toISOString()};
+  // Guardar en localStorage para que el SW pueda leerlo
+  localStorage.setItem('em_notif_config', JSON.stringify(config));
+  // Enviar al SW si está activo
+  if(swReg && swReg.active){
+    swReg.active.postMessage({type:'SAVE_CONFIG', config});
+  }
+}
+
 function updateNotifStatusUI(){
   const box=document.getElementById('notif-status-box');
   const row=document.getElementById('notif-status-row');
@@ -680,59 +716,79 @@ function updateNotifStatusUI(){
     txt.textContent='Las notificaciones no están disponibles en este navegador.';
     btn.style.display='none';return;
   }
+  const swOk='serviceWorker' in navigator;
   const perm=Notification.permission;
   if(perm==='granted'){
     row.className='notif-status ok';dot.className='dot green';
-    txt.textContent='✅ Notificaciones activadas. Recibirás el aviso cada lunes a las 10:00h.';
+    txt.textContent='✅ Notificaciones activadas. Cada lunes a las 10:00h recibirás el aviso.';
     btn.style.display='none';
     document.getElementById('notif-preview').style.display='block';
   }else if(perm==='denied'){
     row.className='notif-status off';dot.className='dot red';
-    txt.textContent='❌ Notificaciones bloqueadas. Actívalas en los ajustes del navegador.';
+    txt.textContent='❌ Notificaciones bloqueadas. Ve a Ajustes del móvil → Safari/Chrome → Notificaciones y actívalas.';
     btn.style.display='none';
   }else{
     row.className='notif-status warn';dot.className='dot gold';
-    txt.textContent='⚠️ Notificaciones no activadas. Pulsa el botón para activarlas.';
+    txt.textContent='⚠️ Notificaciones no activadas todavía. Pulsa el botón.';
     btn.style.display='block';
   }
 }
+
 async function requestNotifPermission(){
   if(!('Notification' in window)){showToast('Tu navegador no soporta notificaciones');return;}
+  // Registrar SW primero
+  await initServiceWorker();
   const perm=await Notification.requestPermission();
   updateNotifStatusUI();
-  if(perm==='granted'){scheduleNextNotif();showToast('✅ ¡Notificaciones activadas!');document.getElementById('notif-preview').style.display='block';}
-  else showToast('Notificaciones denegadas. Actívalas en ajustes.');
+  if(perm==='granted'){
+    const myIdx=getMyIdx();
+    if(myIdx>=0) await saveNotifConfigToSW(myIdx);
+    // Registrar periodic sync si disponible (Android Chrome)
+    try{
+      if(swReg && 'periodicSync' in swReg){
+        await swReg.periodicSync.register('euromillones-weekly',{minInterval: 6*24*60*60*1000});
+      }
+    }catch(e){}
+    showToast('✅ ¡Notificaciones activadas!');
+    document.getElementById('notif-preview').style.display='block';
+  }else{
+    showToast('Notificaciones denegadas. Actívalas en los ajustes del móvil.');
+  }
 }
-function testNotif(){
+
+async function testNotif(){
   const myIdx=getMyIdx();
   if(myIdx<0){showToast('Primero selecciona tu nombre');return;}
   if(Notification.permission!=='granted'){showToast('Primero activa las notificaciones');return;}
   const msg=getNotifMessage(myIdx);
-  new Notification(msg.title,{body:msg.body});
+  // Enviar via SW si disponible (más fiable), sino directo
+  if(swReg && swReg.active){
+    swReg.active.postMessage({type:'SEND_TEST', title:msg.title, body:msg.body});
+    // Fallback directo también
+    setTimeout(()=>new Notification(msg.title,{body:msg.body}), 200);
+  }else{
+    new Notification(msg.title,{body:msg.body});
+  }
   showToast('📨 Notificación de prueba enviada');
 }
-function scheduleNextNotif(){
-  const myIdx=getMyIdx();
-  if(myIdx<0||Notification.permission!=='granted') return;
-  const nextMonday=getNextMondays(1)[0];
-  nextMonday.setHours(10,0,0,0);
-  const ms=nextMonday-new Date();
-  if(ms>0&&ms<8*24*3600*1000){
-    setTimeout(()=>{
-      const msg=getNotifMessage(myIdx);
-      new Notification(msg.title,{body:msg.body});
-      setTimeout(scheduleNextNotif,60000);
-    },ms);
-  }
-}
-function onPersonChange(){
+
+async function onPersonChange(){
   const sel=document.getElementById('who-select').value;
-  if(sel===''){document.getElementById('notif-status-box').style.display='none';document.getElementById('notif-preview').style.display='none';return;}
+  if(sel===''){
+    document.getElementById('notif-status-box').style.display='none';
+    document.getElementById('notif-preview').style.display='none';
+    return;
+  }
   const idx=parseInt(sel);
   localStorage.setItem('em_who',idx);
-  updateNotifStatusUI();updateNotifPreview(idx);buildScheduleList();
-  if(Notification.permission==='granted') scheduleNextNotif();
+  updateNotifStatusUI();
+  updateNotifPreview(idx);
+  buildScheduleList();
+  if(Notification.permission==='granted'){
+    await saveNotifConfigToSW(idx);
+  }
 }
+
 function restoreWho(){
   const saved=localStorage.getItem('em_who');
   if(saved!==null){document.getElementById('who-select').value=saved;onPersonChange();}
@@ -750,7 +806,13 @@ buildMembers();
 renderHistory();
 initDraw();
 restoreWho();
-if(Notification.permission==='granted') scheduleNextNotif();
+// Registrar Service Worker al cargar
+initServiceWorker().then(reg => {
+  if(reg && Notification.permission==='granted'){
+    const myIdx=getMyIdx();
+    if(myIdx>=0) saveNotifConfigToSW(myIdx);
+  }
+});
 </script>
 </body>
 </html>
