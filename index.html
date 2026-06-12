@@ -165,8 +165,8 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
 .av-current-info{font-size:13px;color:var(--text2);}
 .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
 .stat-card{background:var(--surface);border-radius:var(--radius);padding:14px;border:.5px solid var(--border);box-shadow:var(--shadow);text-align:center;}
-.stat-val{font-size:22px;font-weight:800;margin-bottom:3px;}
-.stat-lbl{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+.stat-val{font-size:22px;font-weight:800;margin-bottom:2px;}
+.stat-lbl{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin-top:2px;}
 .num-freq-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:.5px solid var(--border);}
 .num-freq-row:last-child{border-bottom:none;}
 .num-freq-ball{width:32px;height:32px;border-radius:50%;background:var(--blue-light);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
@@ -177,6 +177,12 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
 .edit-num-btn{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;}
 .edit-num-btn.sel-main{background:linear-gradient(135deg,#1976D2,#42A5F5);border-color:#1976D2;color:#fff;}
 .edit-num-btn.sel-star{background:linear-gradient(135deg,#F57F17,#FFD54F);border-color:#F57F17;color:#fff;}
+.avatar-popup{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 16px 32px;box-shadow:0 -4px 24px rgba(0,0,0,0.15);z-index:200;transform:translateY(100%);transition:transform .25s ease;}
+.avatar-popup.open{transform:translateY(0);}
+.avatar-popup-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:199;display:none;}
+.avatar-popup-overlay.open{display:block;}
+.avatar-popup-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:14px;text-align:center;}
+.avatar-popup-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-height:240px;overflow-y:auto;}
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.82);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap;}
 .toast.show{opacity:1;}
 </style>
@@ -330,24 +336,24 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
     <div class="card-label">Estadísticas</div>
     <div class="stats-grid">
       <div class="stat-card">
-        <div class="stat-val" id="stat-sorteos">0</div>
-        <div class="stat-lbl">Sorteos jugados</div>
+        <div class="stat-val" id="stat-peor-racha">—</div>
+        <div class="stat-lbl">Peor racha sin premio</div>
       </div>
       <div class="stat-card">
-        <div class="stat-val" id="stat-racha">0</div>
-        <div class="stat-lbl">Racha sin premio</div>
+        <div class="stat-val" id="stat-mejor-racha">—</div>
+        <div class="stat-lbl">Mejor racha con premio</div>
       </div>
       <div class="stat-card">
         <div class="stat-val" id="stat-mejor">—</div>
         <div class="stat-lbl">Mejor premio</div>
       </div>
       <div class="stat-card">
-        <div class="stat-val" id="stat-aciertos">0</div>
-        <div class="stat-lbl">Mejor sorteo</div>
+        <div class="stat-val" id="stat-premiados">—</div>
+        <div class="stat-sub" id="stat-premiados-pct" style="font-size:11px;color:var(--text3);margin-top:2px;"></div>
+        <div class="stat-lbl">Sorteos premiados</div>
       </div>
     </div>
-    <div class="card-label" style="margin-top:8px;margin-bottom:10px;">Números más acertados</div>
-    <div id="num-freq-list"><div class="empty-state" style="padding:12px 0;font-size:12px;">Comprueba premios para ver estadísticas</div></div>
+
   </div>
 
   <!-- HISTORIAL -->
@@ -408,27 +414,13 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
     <div class="card-label">Miembros del grupo</div>
     <div id="members-list"></div>
   </div>
-  <div class="card">
-    <div class="card-label">Tu avatar</div>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:10px;">Selecciona tu nombre y elige un avatar.</p>
-    <select id="who-select-grupo" onchange="onGrupoPersonChange()" style="width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px solid var(--border2);background:var(--surface2);color:var(--text);font-size:15px;margin-bottom:12px;-webkit-appearance:none;">
-      <option value="">— Selecciona tu nombre —</option>
-      <option value="0">Eduard</option>
-      <option value="1">Fran</option>
-      <option value="2">Jessi</option>
-      <option value="3">Natalia</option>
-      <option value="4">Elena</option>
-    </select>
-    <div id="avatar-section-grupo" style="display:none;">
-      <div class="av-current" id="av-current-grupo" onclick="toggleAvatarGridGrupo()" style="cursor:pointer;">
-        <span class="av-current-emoji" id="av-current-emoji-grupo">😀</span>
-        <span class="av-current-info">Tócalo para cambiarlo</span>
-        <span id="av-arrow-grupo" style="margin-left:auto;font-size:14px;color:var(--text3);">›</span>
-      </div>
-      <div class="avatar-grid" id="avatar-grid-grupo" style="display:none;margin-top:10px;"></div>
-    </div>
-  </div>
-</div><div class="toast" id="toast"></div>
+
+</div><div class="avatar-popup-overlay" id="av-overlay" onclick="closeAvatarPopup()"></div>
+<div class="avatar-popup" id="av-popup">
+  <div class="avatar-popup-title" id="av-popup-title">Elige tu avatar</div>
+  <div class="avatar-popup-grid" id="av-popup-grid"></div>
+</div>
+<div class="toast" id="toast"></div>
 
 <script>
 // Números del grupo — cargados desde localStorage si han sido modificados
@@ -732,80 +724,67 @@ function renderHistory(){
     history.length===0?'Sin premios registrados':
     `${history.length} premio${history.length!==1?'s':''}`;
   // Estadísticas
-  const statSorteos=document.getElementById('stat-sorteos');
-  const statRacha=document.getElementById('stat-racha');
+  const statPeorRacha=document.getElementById('stat-peor-racha');
+  const statMejorRacha=document.getElementById('stat-mejor-racha');
   const statMejor=document.getElementById('stat-mejor');
-  const statAciertos=document.getElementById('stat-aciertos');
-  if(statSorteos) statSorteos.textContent=sorteosJugados;
-  if(statRacha){
-    const racha=sorteosJugados-history.length;
-    statRacha.textContent=racha>0?racha+' sorteos':'¡Premio!';
-    statRacha.style.color=racha>10?'#C62828':racha>5?'#F57F17':'#2E7D32';
-  }
+  const statPremiados=document.getElementById('stat-premiados');
+  const statPremiadosPct=document.getElementById('stat-premiados-pct');
+
+  // Mejor premio
   if(statMejor){
     statMejor.textContent=history.length===0?'—':formatEur(Math.max(...history.map(e=>e.amount)));
-    statMejor.style.fontSize=history.length===0?'22px':'16px';
+    statMejor.style.fontSize=history.length===0?'22px':'14px';
   }
-  // Aciertos por número
-  const hitCount={};
-  OUR_MAIN.forEach(n=>hitCount[n]=0);
-  let totalAciertos=0;
-  const epoch=new Date('2026-06-08T00:00:00');
-  const now=new Date();
-  const d=new Date(epoch);
-  while(d<=now){
-    if(d.getDay()===2||d.getDay()===5){
-      const fechaKey=d.getDate().toString().padStart(2,'0')+'/'+(d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getFullYear();
-      const drawStr=localStorage.getItem('em_draw_'+fechaKey);
-      if(drawStr){try{
-        const draw=JSON.parse(drawStr);
-        OUR_MAIN.forEach(n=>{if(draw.numeros.includes(n)){hitCount[n]++;totalAciertos++;}});
-      }catch(e){}}
+
+  // Sorteos premiados
+  const numPremiados=history.filter(e=>e.label!=='Premio manual').length;
+  if(statPremiados) statPremiados.textContent=numPremiados;
+  if(statPremiadosPct){
+    const pct=sorteosJugados>0?Math.round(numPremiados/sorteosJugados*100):0;
+    statPremiadosPct.textContent=sorteosJugados>0?(pct+'% de '+sorteosJugados+' jugados'):'';
+  }
+
+  // Rachas
+  const epoch2=new Date('2026-06-08T00:00:00');
+  const now2=new Date();
+  const d2=new Date(epoch2);
+  let rachaActual=0,peorRacha=0,mejorRachaVal=0,rachaConPremio=0;
+  while(d2<=now2){
+    if(d2.getDay()===2||d2.getDay()===5){
+      const fk=d2.getDate().toString().padStart(2,'0')+'/'+(d2.getMonth()+1).toString().padStart(2,'0')+'/'+d2.getFullYear();
+      const played=getPlayedState(fk);
+      if(played!=='no'){
+        const drawStr=localStorage.getItem('em_draw_'+fk);
+        if(drawStr){try{
+          const draw=JSON.parse(drawStr);
+          const hm=OUR_MAIN.filter(n=>draw.numeros.includes(n)).length;
+          const hs=OUR_STARS.filter(n=>draw.estrellas.includes(n)).length;
+          const hasPrize=getPrize(hm,hs).cat!=='none';
+          if(hasPrize){
+            if(rachaActual>peorRacha) peorRacha=rachaActual;
+            rachaActual=0;
+            rachaConPremio++;
+            if(rachaConPremio>mejorRachaVal) mejorRachaVal=rachaConPremio;
+          }else{
+            rachaActual++;
+            rachaConPremio=0;
+          }
+        }catch(e){}}
+      }
     }
-    d.setDate(d.getDate()+1);
+    d2.setDate(d2.getDate()+1);
   }
-  // Mejor sorteo = max aciertos en un sorteo
-  let mejorSorteo=0;
-  const epochS=new Date('2026-06-08T00:00:00');
-  const nowS=new Date();
-  const dS=new Date(epochS);
-  while(dS<=nowS){
-    if(dS.getDay()===2||dS.getDay()===5){
-      const fk=dS.getDate().toString().padStart(2,'0')+'/'+(dS.getMonth()+1).toString().padStart(2,'0')+'/'+dS.getFullYear();
-      const drawStr=localStorage.getItem('em_draw_'+fk);
-      if(drawStr){try{
-        const draw=JSON.parse(drawStr);
-        const hm=OUR_MAIN.filter(n=>draw.numeros.includes(n)).length;
-        const hs=OUR_STARS.filter(n=>draw.estrellas.includes(n)).length;
-        if(hm+hs>mejorSorteo) mejorSorteo=hm+hs;
-      }catch(e){}}
-    }
-    dS.setDate(dS.getDate()+1);
+  if(rachaActual>peorRacha) peorRacha=rachaActual;
+  if(statPeorRacha){
+    statPeorRacha.textContent=peorRacha>0?peorRacha:'—';
+    statPeorRacha.style.color=peorRacha>10?'#C62828':peorRacha>5?'#F57F17':'var(--text)';
   }
-  if(statAciertos){
-    statAciertos.textContent=mejorSorteo>0?mejorSorteo+' aciertos':'—';
-    statAciertos.style.fontSize=mejorSorteo>0?'18px':'22px';
+  if(statMejorRacha){
+    statMejorRacha.textContent=mejorRachaVal>0?mejorRachaVal:'—';
+    statMejorRacha.style.color=mejorRachaVal>2?'#2E7D32':'var(--text)';
   }
-  // Frecuencia de números
-  const freqList=document.getElementById('num-freq-list');
-  if(freqList){
-    const maxHit=Math.max(1,...OUR_MAIN.map(n=>hitCount[n]));
-    const anyHit=OUR_MAIN.some(n=>hitCount[n]>0);
-    if(!anyHit){
-      freqList.innerHTML='<div class="empty-state" style="padding:12px 0;font-size:12px;">Comprueba premios para ver estadísticas de aciertos</div>';
-    }else{
-      freqList.innerHTML='';
-      [...OUR_MAIN].sort((a,b)=>hitCount[b]-hitCount[a]).forEach(n=>{
-        const row=document.createElement('div');row.className='num-freq-row';
-        const pct=Math.round(hitCount[n]/maxHit*100);
-        row.innerHTML=`<div class="num-freq-ball">${n}</div>
-          <div class="num-freq-bar-wrap"><div class="num-freq-bar" style="width:${pct}%"></div></div>
-          <span class="num-freq-count">${hitCount[n]}x</span>`;
-        freqList.appendChild(row);
-      });
-    }
-  }
-  // Historial
+
+    // Historial
   const list=document.getElementById('history-list');
   if(history.length===0){
     list.innerHTML='<div class="empty-state">Todavía no hay premios 🍀<br><span style="font-size:12px;">Cuando toque algo, aparecerá aquí</span></div>';
@@ -894,12 +873,16 @@ function buildTurns(){
   document.getElementById('wa-turn').textContent=turnMsg; lastWATurn=turnMsg;
 }
 function buildMembers(){
-  const idx=getCurrentPayerIdx(), list=document.getElementById('members-list'); list.innerHTML='';
+  const list=document.getElementById('members-list');
+  if(!list) return;
+  list.innerHTML='';
   PEOPLE.forEach((p,i)=>{
-    const row=document.createElement('div'); row.className='person-row';
-    row.innerHTML=`${getAvatarHTML(p.name,i)}
-      <div class="person-info"><div class="person-name">${p.name}</div>
-      <div class="person-sub">${i===idx?'💳 Paga esta ronda (20€)':'💸 Bizum de 4€'}</div></div>`;
+    const row=document.createElement('div');row.className='person-row';
+    row.style.cursor='pointer';
+    row.onclick=()=>openAvatarPopup(p.name);
+    const avatar=getAvatar(p.name)||'😀';
+    const avatarEl=`<span style="font-size:32px;flex-shrink:0;">${avatar}</span>`;
+    row.innerHTML=`<div class="person-info"><div class="person-name">${p.name}</div><div class="person-sub" style="font-size:11px;color:var(--text3);">Toca para cambiar avatar</div></div>${avatarEl}`;
     list.appendChild(row);
   });
 }
@@ -1352,41 +1335,38 @@ function restoreGrupoWho(){
   }
 }
 
-function buildAvatarPickerGrupo(name){
-  const grid=document.getElementById('avatar-grid-grupo');
+let _avPopupName='';
+
+function openAvatarPopup(name){
+  _avPopupName=name;
+  const grid=document.getElementById('av-popup-grid');
   const current=getAvatar(name);
-  if(!grid) return;
+  document.getElementById('av-popup-title').textContent=name+' — elige tu avatar';
   grid.innerHTML='';
-  grid.style.display='none';
-  document.getElementById('av-arrow-grupo').textContent='›';
   AVATARS.forEach(av=>{
     const d=document.createElement('div');
     d.className='av-opt'+(current===av?' selected':'');
     d.textContent=av;
-    d.onclick=()=>selectAvatarGrupo(name,av,d);
+    d.onclick=()=>selectAvatarPopup(av,d);
     grid.appendChild(d);
   });
-  document.getElementById('av-current-emoji-grupo').textContent=current||'😀';
+  document.getElementById('av-overlay').classList.add('open');
+  document.getElementById('av-popup').classList.add('open');
 }
 
-function toggleAvatarGridGrupo(){
-  const grid=document.getElementById('avatar-grid-grupo');
-  const arrow=document.getElementById('av-arrow-grupo');
-  const open=grid.style.display==='none';
-  grid.style.display=open?'flex':'none';
-  arrow.textContent=open?'⌃':'›';
+function closeAvatarPopup(){
+  document.getElementById('av-overlay').classList.remove('open');
+  document.getElementById('av-popup').classList.remove('open');
 }
 
-function selectAvatarGrupo(name,emoji,el){
-  saveAvatar(name,emoji);
-  document.querySelectorAll('#avatar-grid-grupo .av-opt').forEach(d=>d.classList.remove('selected'));
+function selectAvatarPopup(emoji,el){
+  saveAvatar(_avPopupName,emoji);
+  document.querySelectorAll('#av-popup-grid .av-opt').forEach(d=>d.classList.remove('selected'));
   el.classList.add('selected');
-  document.getElementById('av-current-emoji-grupo').textContent=emoji;
-  document.getElementById('avatar-grid-grupo').style.display='none';
-  document.getElementById('av-arrow-grupo').textContent='›';
+  closeAvatarPopup();
+  buildMembers();
   buildTurns();
   buildBizumConfirm();
-  buildMembers();
   showToast('Avatar guardado ✅');
 }
 
