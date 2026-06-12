@@ -153,7 +153,7 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
     <div class="header-logo-badge"><span>SAICA</span></div>
   </div>
   <div class="header-divider"></div>
-  <h1>🎰 Euromillón SAICA</h1>
+  <h1>Euromillón SAICA</h1>
 </div>
 
 <div class="tabbar">
@@ -166,6 +166,12 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
 
 <!-- ── COMPROBAR ─────────────────────────────────────────────────────────── -->
 <div class="section active" id="tab-comprobar">
+  <div id="top-result-banner" style="display:none;border-radius:16px;padding:16px;margin-bottom:12px;text-align:center;">
+    <div id="top-result-emoji" style="font-size:40px;margin-bottom:8px;">🎰</div>
+    <div id="top-result-title" style="font-size:18px;font-weight:800;margin-bottom:4px;"></div>
+    <div id="top-result-amount" style="font-size:28px;font-weight:800;display:none;margin-bottom:4px;"></div>
+    <div id="top-result-sub" style="font-size:13px;opacity:.7;"></div>
+  </div>
   <div class="card">
     <div class="card-label">Nuestros números</div>
     <div class="ball-row">
@@ -514,6 +520,37 @@ function checkPrize(){
   else pa.style.display='none';
   document.getElementById('prize-sub').textContent=
     hitM.length===0&&hitS.length===0?'Ningún acierto. ¡Suerte el próximo sorteo!':`Núm: ${hitM.length>0?hitM.join(', '):'—'}  ·  Estrellas: ${hitS.length>0?hitS.join(', '):'—'}`;
+  // Top banner
+  const banner=document.getElementById('top-result-banner');
+  const bannerEmoji=document.getElementById('top-result-emoji');
+  const bannerTitle=document.getElementById('top-result-title');
+  const bannerAmount=document.getElementById('top-result-amount');
+  const bannerSub=document.getElementById('top-result-sub');
+  banner.style.display='block';
+  if(prize.cat==='none'){
+    banner.style.background='#F1F3F4';
+    banner.style.border='1px solid #E0E0E0';
+    bannerEmoji.textContent='😅';
+    bannerTitle.style.color='#374151';
+    bannerTitle.textContent='Sin premio esta vez';
+    bannerAmount.style.display='none';
+    bannerSub.style.color='#6B7280';
+    bannerSub.textContent='¡Suerte el próximo sorteo!';
+  }else{
+    const bgMap={small:'linear-gradient(135deg,#E8F5E9,#F1F8E9)',medium:'linear-gradient(135deg,#FFF9C4,#FFF3E0)',big:'linear-gradient(135deg,#E3F2FD,#E8EAF6)'};
+    const borderMap={small:'#A5D6A7',medium:'#FFD54F',big:'#90CAF9'};
+    const colorMap={small:'#2E7D32',medium:'#E65100',big:'#1565C0'};
+    banner.style.background=bgMap[prize.cat];
+    banner.style.border='1px solid '+borderMap[prize.cat];
+    bannerEmoji.textContent='🏆';
+    bannerTitle.style.color=colorMap[prize.cat];
+    bannerTitle.textContent=prize.label;
+    bannerAmount.style.display='block';
+    bannerAmount.style.color=colorMap[prize.cat];
+    bannerAmount.textContent=prize.approx;
+    bannerSub.style.color=colorMap[prize.cat];
+    bannerSub.textContent='¡Enhorabuena! 🎊';
+  }
   const hb=document.getElementById('hit-balls'); hb.innerHTML='';
   const lbl=document.createElement('div');
   lbl.style.cssText='width:100%;text-align:center;font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.05em;text-transform:uppercase;';
@@ -528,21 +565,22 @@ function checkPrize(){
     const num=parseFloat(approxNum);
     if(!isNaN(num)) document.getElementById('real-amount').value=num;
   }
-  const emojiMsg=prize.cat==='big'?'🏆':prize.cat==='medium'?'🎉':prize.cat==='small'?'🍀':'😅';
+  const resultEmoji=prize.cat==='none'?'😅':'🏆';
   const numLine=[...numeros].sort((a,b)=>a-b).map(n=>hitM.includes(n)?`🔵 *${n}*`:`⚪ ${n}`).join(' ');
   const starLine=[...estrellas].sort((a,b)=>a-b).map(n=>hitS.includes(n)?`🟡 *${n}*`:`⚪ ${n}`).join(' ');
-  const aciertosLine=hitM.length===0&&hitS.length===0
-    ?'❌ *Sin aciertos esta vez*'
-    :`✅ Números: *${hitM.length>0?hitM.join(', '):'ninguno'}*  ·  Estrellas: *${hitS.length>0?hitS.join(', '):'ninguna'}*`;
+  const resultLine=prize.cat==='none'
+    ?resultEmoji+' *Sin premio esta vez*'
+    :resultEmoji+' *'+prize.label+'* — '+prize.approx;
   const lineSep='─'.repeat(28);
-  const msg=emojiMsg+' *EUROMILLÓN SAICA — '+fecha+'*'
+  const msg='*EUROMILLÓN SAICA — '+fecha+'*'
+    +'\n'+lineSep
+    +'\n'+resultLine
     +'\n'+lineSep
     +'\n\n🎱 *Nuestros números*'
     +'\n'+OUR_MAIN.join(' · ')+'  ⭐ '+OUR_STARS.join(' · ')
     +'\n\n🔢 *Sorteo premiado*'
     +'\n'+numLine+'  ⭐ '+starLine
-    +'\n\n'+aciertosLine
-    +'\n🏅 *'+prize.label+'*'+(prize.approx?' — '+prize.approx:'')
+    +'\n\n✅ Aciertos: *'+hitM.join(', ')+'*'+(hitS.length?'  ·  Estrellas: *'+hitS.join(', ')+'*':'')
     +'\n'+lineSep
     +'\n💳 Paga esta ronda: *'+payer+'*'
     +'\n💸 Bizum de *4€* a '+payer+':'
