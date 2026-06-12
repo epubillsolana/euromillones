@@ -411,6 +411,20 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
 <!-- ── NÚMEROS ─────────────────────────────────────────────────────────────── -->
 <div class="section" id="tab-grupo">
   <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div class="card-label" style="margin-bottom:0;">Nombre del grupo</div>
+      <button onclick="toggleEditName()" id="edit-name-btn" style="padding:4px 12px;border-radius:99px;background:var(--surface2);border:1px solid var(--border2);font-size:11px;font-weight:700;cursor:pointer;color:var(--text2);">✏️ Editar</button>
+    </div>
+    <div id="name-view" style="font-size:18px;font-weight:700;color:var(--text);padding:4px 0;" id="group-name-display"></div>
+    <div id="name-editor" style="display:none;margin-top:8px;">
+      <input type="text" id="name-input" maxlength="30" style="width:100%;padding:10px 14px;border-radius:10px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text);font-size:16px;font-family:inherit;outline:none;" placeholder="Nombre del grupo...">
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button onclick="cancelEditName()" style="flex:1;padding:10px;border-radius:10px;background:var(--surface2);border:1px solid var(--border2);font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
+        <button onclick="saveName()" style="flex:1;padding:10px;border-radius:10px;background:#2E7D32;color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;">Guardar ✅</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
     <div class="card-label">Miembros del grupo</div>
     <div id="members-list"></div>
   </div>
@@ -1114,7 +1128,7 @@ function buildWABizum(){
   const state=getBizumState();
   const done=others.filter(p=>state[p.name]);
   const pending=others.filter(p=>!state[p.name]);
-  const msg='💸 *Estado Bizums — '+CFG_NAME+'*'
+  const msg='💸 *Estado Bizums — '+(localStorage.getItem('em_group_name')||CFG_NAME)+'*'
     +'\n💳 Paga esta ronda: *'+payer+'*'
     +'\n'+'─'.repeat(24)
     +(done.length?'\n✅ Confirmados:\n'+done.map(p=>'   · '+p.name).join('\n'):'')
@@ -1370,6 +1384,46 @@ function selectAvatarPopup(emoji,el){
   showToast('Avatar guardado ✅');
 }
 
+// ── EDIT NAME ─────────────────────────────────────────────────────────────────
+function renderGroupName(){
+  const name=localStorage.getItem('em_group_name')||CFG_NAME;
+  const el=document.getElementById('name-view');
+  if(el) el.textContent=name;
+  // Update header
+  const badge=document.querySelector('.header-logo-badge span');
+  if(badge) badge.textContent='SAICA';
+  const h1=document.querySelector('.header h1');
+  if(h1) h1.textContent=name;
+}
+
+function toggleEditName(){
+  const editor=document.getElementById('name-editor');
+  const view=document.getElementById('name-view');
+  const btn=document.getElementById('edit-name-btn');
+  const isOpen=editor.style.display!=='none';
+  editor.style.display=isOpen?'none':'block';
+  view.style.display=isOpen?'block':'none';
+  btn.textContent=isOpen?'✏️ Editar':'✕ Cerrar';
+  if(!isOpen) document.getElementById('name-input').value=localStorage.getItem('em_group_name')||CFG_NAME;
+}
+
+function cancelEditName(){
+  document.getElementById('name-editor').style.display='none';
+  document.getElementById('name-view').style.display='block';
+  document.getElementById('edit-name-btn').textContent='✏️ Editar';
+}
+
+function saveName(){
+  const val=document.getElementById('name-input').value.trim();
+  if(!val){showToast('Escribe un nombre');return;}
+  localStorage.setItem('em_group_name',val);
+  cancelEditName();
+  renderGroupName();
+  buildTurns();
+  buildWABizum();
+  showToast('✅ Nombre actualizado');
+}
+
 // ── WA HELPERS ───────────────────────────────────────────────────────────────
 function copyMsg(){navigator.clipboard.writeText(lastWAMsg).then(()=>showToast('✅ Copiado')).catch(()=>showToast('Copia manualmente'));}
 function openWA(){window.open('https://wa.me/?text='+encodeURIComponent(lastWAMsg),'_blank');}
@@ -1383,6 +1437,7 @@ buildWABizum();
 buildMembers();
 renderHistory();
 renderNumsView();
+renderGroupName();
 initDraw();
 restoreWho();
 // Registrar Service Worker al cargar
