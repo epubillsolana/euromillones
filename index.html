@@ -503,7 +503,7 @@ function checkPrize(){
   OUR_STARS.forEach(n=>{const el=document.getElementById('ss-'+n);if(el)el.className='ball draw-star';});
   const prize=getPrize(hitM.length,hitS.length);
   lastPrizeCat=prize.cat;
-  const payerIdx=getCurrentPayerIdx(), payer=PEOPLE[payerIdx];
+  const payerIdx=getCurrentPayerIdx(), payerObj=PEOPLE[payerIdx], payer=payerObj.name;
   const others=PEOPLE.filter((_,i)=>i!==payerIdx).map(p=>p.name);
   document.getElementById('prize-box').className='prize-box '+prize.cat;
   document.getElementById('prize-emoji').textContent=prize.emoji;
@@ -718,7 +718,7 @@ async function initServiceWorker(){
 }
 
 async function saveNotifConfigToSW(myIdx){
-  const payerIdx=getCurrentPayerIdx(), payer=PEOPLE[payerIdx];
+  const payerIdx=getCurrentPayerIdx(), payerObj=PEOPLE[payerIdx], payer=payerObj.name;
   const others=PEOPLE.filter((_,i)=>i!==payerIdx).map(p=>p.name);
   const nextMonday=getNextMondays(1)[0]; nextMonday.setHours(10,0,0,0);
   const config={myIdx,payerIdx,payerName:payer.name,others,nextMonday:nextMonday.toISOString()};

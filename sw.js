@@ -1,5 +1,5 @@
 // Service Worker — Euromillones del grupo
-const CACHE = 'euromillones-v2';
+const CACHE = 'euromillones-v3';
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(clients.claim()));
