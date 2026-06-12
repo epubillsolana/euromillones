@@ -149,6 +149,12 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
 .balance-card{border-radius:var(--radius);padding:14px;text-align:center;border:.5px solid var(--border);background:var(--surface);box-shadow:var(--shadow);}
 .balance-val{font-size:20px;font-weight:800;margin-bottom:3px;}
 .balance-lbl{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+.played-bar{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:.5px solid var(--border);}
+.played-label{font-size:13px;color:var(--text2);}
+.played-btn{padding:7px 16px;border-radius:99px;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .2s;}
+.played-btn.yes{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7;}
+.played-btn.no{background:#FFEBEE;color:#C62828;border:1px solid #FFCDD2;}
+.played-btn.unknown{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.82);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap;}
 .toast.show{opacity:1;}
 </style>
@@ -187,6 +193,10 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
     <div class="card-label">Último sorteo oficial</div>
     <div id="sorteo-area"><div class="loader"><span class="spinner"></span>Consultando resultados...</div></div>
     <button class="btn btn-blue" id="btn-check" onclick="checkPrize()" disabled>Comprobar premio</button>
+    <div class="played-bar">
+      <span class="played-label">¿Hemos jugado este sorteo?</span>
+      <button class="played-btn unknown" id="btn-played" onclick="togglePlayed()">Sin marcar</button>
+    </div>
   </div>
   <div id="result-area" style="display:none;">
       <div id="top-result-banner" style="display:none;border-radius:16px;padding:16px;margin-bottom:12px;text-align:center;">
@@ -515,6 +525,7 @@ function renderDraw(data){
       ${estrellas.map(n=>`<div class="ball draw-star" id="ss-${n}">${n}</div>`).join('')}
     </div>`;
   document.getElementById('btn-check').disabled=false;
+  initPlayedBtn();
 }
 
 function getPrize(nm,ns){
@@ -639,11 +650,9 @@ function renderHistory(){
   document.getElementById('total-amount').textContent=formatEur(total);
   // Calcular gastos: cada ronda cuesta 20€ (coste del boleto)
   // Contamos cuántas rondas han pasado desde el inicio
-  const epoch=new Date('2026-06-08T00:00:00');
-  const msTranscurridos=Math.max(0,new Date()-epoch);
-  const sorteosJugados=Math.floor(msTranscurridos/(3.5*24*3600*1000));
-  const rondasCompletadas=Math.floor(sorteosJugados/4);
-  const totalGastado=rondasCompletadas*20;
+  const sorteosJugados=countSorteosJugados();
+  const costePorSorteo=20/8; // 20€ cada 8 sorteos = 2.50€/sorteo
+  const totalGastado=Math.floor(sorteosJugados/8)*20 + (sorteosJugados%8)*costePorSorteo;
   const balance=total-totalGastado;
   const gastadoEl=document.getElementById('bal-gastado');
   const balanceEl=document.getElementById('bal-balance');
@@ -977,6 +986,55 @@ function buildWABizum(){
 let lastWABizum='';
 function copyBizum(){navigator.clipboard.writeText(lastWABizum).then(()=>showToast('✅ Copiado')).catch(()=>showToast('Copia manualmente'));}
 function openWABizum(){window.open('https://wa.me/?text='+encodeURIComponent(lastWABizum),'_blank');}
+
+// ── SORTEOS JUGADOS ───────────────────────────────────────────────────────────
+function getPlayedKey(fecha){return 'em_played_'+fecha;}
+function getPlayedState(fecha){return localStorage.getItem(getPlayedKey(fecha));}
+function setPlayedState(fecha,val){localStorage.setItem(getPlayedKey(fecha),val);}
+
+function initPlayedBtn(){
+  if(!drawData) return;
+  const state=getPlayedState(drawData.fecha);
+  const btn=document.getElementById('btn-played');
+  if(!btn) return;
+  if(state==='yes'){btn.className='played-btn yes';btn.textContent='✅ Jugado';}
+  else if(state==='no'){btn.className='played-btn no';btn.textContent='❌ No jugado';}
+  else{btn.className='played-btn unknown';btn.textContent='Sin marcar';}
+}
+
+function togglePlayed(){
+  if(!drawData) return;
+  const current=getPlayedState(drawData.fecha);
+  let next;
+  if(!current||current==='unknown') next='yes';
+  else if(current==='yes') next='no';
+  else next='yes';
+  setPlayedState(drawData.fecha,next);
+  initPlayedBtn();
+  renderHistory(); // recalcular gastos
+  showToast(next==='yes'?'✅ Sorteo marcado como jugado':'❌ Sorteo marcado como no jugado');
+}
+
+function countSorteosJugados(){
+  // Contar sorteos marcados como jugados desde la fecha de inicio
+  const epoch=new Date('2026-06-08T00:00:00');
+  const now=new Date();
+  let count=0;
+  const d=new Date(epoch);
+  while(d<=now){
+    // Martes=2, Viernes=5
+    if(d.getDay()===2||d.getDay()===5){
+      const fecha=d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'/');
+      // Formato DD/MM/YYYY
+      const fechaKey=d.getDate().toString().padStart(2,'0')+'/'+(d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getFullYear();
+      const state=getPlayedState(fechaKey);
+      // Si está marcado como jugado, o no está marcado (asumimos jugado por defecto)
+      if(state!=='no') count++;
+    }
+    d.setDate(d.getDate()+1);
+  }
+  return count;
+}
 
 // ── WA HELPERS ───────────────────────────────────────────────────────────────
 function copyMsg(){navigator.clipboard.writeText(lastWAMsg).then(()=>showToast('✅ Copiado')).catch(()=>showToast('Copia manualmente'));}
