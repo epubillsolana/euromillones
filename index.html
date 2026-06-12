@@ -163,6 +163,20 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
 .av-current{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:10px;}
 .av-current-emoji{font-size:28px;}
 .av-current-info{font-size:13px;color:var(--text2);}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
+.stat-card{background:var(--surface);border-radius:var(--radius);padding:14px;border:.5px solid var(--border);box-shadow:var(--shadow);text-align:center;}
+.stat-val{font-size:22px;font-weight:800;margin-bottom:3px;}
+.stat-lbl{font-size:11px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;}
+.num-freq-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:.5px solid var(--border);}
+.num-freq-row:last-child{border-bottom:none;}
+.num-freq-ball{width:32px;height:32px;border-radius:50%;background:var(--blue-light);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+.num-freq-bar-wrap{flex:1;margin:0 10px;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.num-freq-bar{height:6px;border-radius:3px;background:linear-gradient(90deg,#1976D2,#42A5F5);}
+.num-freq-count{font-size:12px;font-weight:700;color:var(--text2);min-width:24px;text-align:right;}
+.edit-nums-grid{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.edit-num-btn{width:38px;height:38px;border-radius:50%;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;}
+.edit-num-btn.sel-main{background:linear-gradient(135deg,#1976D2,#42A5F5);border-color:#1976D2;color:#fff;}
+.edit-num-btn.sel-star{background:linear-gradient(135deg,#F57F17,#FFD54F);border-color:#F57F17;color:#fff;}
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.82);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap;}
 .toast.show{opacity:1;}
 </style>
@@ -189,12 +203,24 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
 <!-- ── COMPROBAR ─────────────────────────────────────────────────────────── -->
 <div class="section active" id="tab-comprobar">
   <div class="card">
-    <div class="card-label">Nuestros números</div>
-    <div class="ball-row">
-      <div class="ball our-main">8</div><div class="ball our-main">18</div>
-      <div class="ball our-main">23</div><div class="ball our-main">27</div><div class="ball our-main">50</div>
-      <span class="star-sep">⭐</span>
-      <div class="ball our-star">3</div><div class="ball our-star">12</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+      <div class="card-label" style="margin-bottom:0;">Nuestros números</div>
+      <button onclick="toggleEditNums()" id="edit-nums-btn" style="padding:4px 12px;border-radius:99px;background:var(--surface2);border:1px solid var(--border2);font-size:11px;font-weight:700;cursor:pointer;color:var(--text2);">✏️ Editar</button>
+    </div>
+    <div id="nums-view">
+      <div class="ball-row" id="view-main"></div>
+      <div style="margin-top:6px;"><div class="ball-row" id="view-star"></div></div>
+    </div>
+    <div id="nums-editor" style="display:none;">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:10px;">Selecciona 5 números y 2 estrellas.</p>
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;">Números <span id="edit-main-count" style="color:#1565C0;">0/5</span></div>
+      <div class="edit-nums-grid" id="edit-main-grid"></div>
+      <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-top:12px;margin-bottom:6px;">Estrellas <span id="edit-star-count" style="color:#F57F17;">0/2</span></div>
+      <div class="edit-nums-grid" id="edit-star-grid"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button onclick="cancelEditNums()" style="flex:1;padding:10px;border-radius:10px;background:var(--surface2);border:1px solid var(--border2);font-size:13px;font-weight:700;cursor:pointer;">Cancelar</button>
+        <button onclick="saveNums()" style="flex:1;padding:10px;border-radius:10px;background:#2E7D32;color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;">Guardar ✅</button>
+      </div>
     </div>
   </div>
   <div class="card">
@@ -279,6 +305,8 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
 
 <!-- ── PREMIOS ─────────────────────────────────────────────────────────────── -->
 <div class="section" id="tab-premios">
+
+  <!-- BALANCE -->
   <div class="balance-grid">
     <div class="balance-card">
       <div class="balance-val" id="bal-gastado" style="color:var(--red,#C62828);">0,00 €</div>
@@ -289,25 +317,51 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
       <div class="balance-lbl">Balance neto</div>
     </div>
   </div>
+
+  <!-- TOTAL GANADO -->
   <div class="total-box">
     <div class="total-label">Total ganado por el grupo</div>
     <div class="total-amount" id="total-amount">0,00 €</div>
-    <div class="total-sub" id="total-sub">0 premios registrados</div>
+    <div class="total-sub" id="total-sub">Sin premios registrados</div>
   </div>
+
+  <!-- ESTADISTICAS -->
   <div class="card">
-    <div class="card-label">Añadir premio manualmente</div>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:10px;">Si habéis cobrado un premio, añadid el importe real aquí.</p>
-    <div class="add-prize-row">
-      <input type="number" id="manual-amount" placeholder="€ importe" min="0" step="0.01">
-      <button onclick="addManualPrize()">Añadir 💰</button>
+    <div class="card-label">Estadísticas</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-val" id="stat-sorteos">0</div>
+        <div class="stat-lbl">Sorteos jugados</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-racha">0</div>
+        <div class="stat-lbl">Racha sin premio</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-mejor">—</div>
+        <div class="stat-lbl">Mejor premio</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="stat-aciertos">0</div>
+        <div class="stat-lbl">Total aciertos</div>
+      </div>
     </div>
+    <div class="card-label" style="margin-top:8px;margin-bottom:10px;">Números más acertados</div>
+    <div id="num-freq-list"><div class="empty-state" style="padding:12px 0;font-size:12px;">Comprueba premios para ver estadísticas</div></div>
   </div>
+
+  <!-- HISTORIAL -->
   <div class="card">
     <div class="card-label">Historial de premios</div>
     <div id="history-list"><div class="empty-state">Todavía no hay premios registrados 🍀<br><span style="font-size:12px;">Cuando toque algo, aparecerá aquí</span></div></div>
+    <div class="add-prize-row" style="margin-top:10px;">
+      <input type="number" id="manual-amount" placeholder="€ añadir premio" min="0" step="0.01">
+      <button onclick="addManualPrize()">+ Añadir</button>
+    </div>
   </div>
+
   <div id="reset-box" style="display:none;">
-    <button class="btn btn-gray" onclick="resetPrizes()" style="margin-top:4px;">🗑️ Borrar todo el historial</button>
+    <button class="btn btn-gray" onclick="resetPrizes()" style="margin-top:4px;">🗑️ Borrar historial</button>
   </div>
 </div>
 
@@ -315,8 +369,8 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
 <div class="section" id="tab-avisos">
   <div class="card">
     <div class="card-label">¿Quién eres tú?</div>
-    <p style="font-size:13px;color:var(--text2);margin-bottom:10px;">Selecciona tu nombre para recibir el aviso personalizado.</p>
-    <select id="who-select" onchange="onPersonChange()">
+    <p style="font-size:13px;color:var(--text2);margin-bottom:10px;">Selecciona tu nombre para personalizar los avisos.</p>
+    <select id="who-select" onchange="onPersonChange()" style="width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px solid var(--border2);background:var(--surface2);color:var(--text);font-size:15px;-webkit-appearance:none;">
       <option value="">— Selecciona tu nombre —</option>
       <option value="0">Eduard</option>
       <option value="1">Fran</option>
@@ -324,16 +378,6 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
       <option value="3">Natalia</option>
       <option value="4">Elena</option>
     </select>
-
-    <div class="avatar-section" id="avatar-section" style="display:none;">
-      <span class="avatar-label">Tu avatar</span>
-      <div class="av-current" id="av-current" onclick="toggleAvatarGrid()" style="cursor:pointer;">
-        <span class="av-current-emoji" id="av-current-emoji">😀</span>
-        <span class="av-current-info">Tócalo para cambiarlo</span>
-        <span id="av-arrow" style="margin-left:auto;font-size:14px;color:var(--text3);">›</span>
-      </div>
-      <div class="avatar-grid" id="avatar-grid" style="display:none;margin-top:10px;"></div>
-    </div>
   </div>
   <div id="notif-status-box" style="display:none;">
     <div id="notif-status-row" class="notif-status warn">
@@ -359,22 +403,30 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
 </div>
 
 <!-- ── NÚMEROS ─────────────────────────────────────────────────────────────── -->
-<div class="section" id="tab-numeros">
-  <div class="card">
-    <div class="card-label">Combinación fija del grupo</div>
-    <p class="section-title">Números principales</p>
-    <div class="ball-row" style="justify-content:flex-start;margin-bottom:14px;">
-      <div class="ball our-main">8</div><div class="ball our-main">18</div>
-      <div class="ball our-main">23</div><div class="ball our-main">27</div><div class="ball our-main">50</div>
-    </div>
-    <p class="section-title">Estrellas</p>
-    <div class="ball-row" style="justify-content:flex-start;">
-      <div class="ball our-star">3</div><div class="ball our-star">12</div>
-    </div>
-  </div>
+<div class="section" id="tab-grupo">
   <div class="card">
     <div class="card-label">Miembros del grupo</div>
     <div id="members-list"></div>
+  </div>
+  <div class="card">
+    <div class="card-label">Tu avatar</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:10px;">Selecciona tu nombre y elige un avatar.</p>
+    <select id="who-select-grupo" onchange="onGrupoPersonChange()" style="width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px solid var(--border2);background:var(--surface2);color:var(--text);font-size:15px;margin-bottom:12px;-webkit-appearance:none;">
+      <option value="">— Selecciona tu nombre —</option>
+      <option value="0">Eduard</option>
+      <option value="1">Fran</option>
+      <option value="2">Jessi</option>
+      <option value="3">Natalia</option>
+      <option value="4">Elena</option>
+    </select>
+    <div id="avatar-section-grupo" style="display:none;">
+      <div class="av-current" id="av-current-grupo" onclick="toggleAvatarGridGrupo()" style="cursor:pointer;">
+        <span class="av-current-emoji" id="av-current-emoji-grupo">😀</span>
+        <span class="av-current-info">Tócalo para cambiarlo</span>
+        <span id="av-arrow-grupo" style="margin-left:auto;font-size:14px;color:var(--text3);">›</span>
+      </div>
+      <div class="avatar-grid" id="avatar-grid-grupo" style="display:none;margin-top:10px;"></div>
+    </div>
   </div>
   <div class="card">
     <div class="card-label">Tabla de premios Euromillones</div>
@@ -394,12 +446,17 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
       <tr><td>2 + 1 ⭐</td><td class="amt amt-small">~6 €</td></tr>
     </table>
   </div>
-</div>
-
-<div class="toast" id="toast"></div>
+</div><div class="toast" id="toast"></div>
 
 <script>
-const OUR_MAIN=[8,18,23,27,50], OUR_STARS=[3,12];
+// Números del grupo — cargados desde localStorage si han sido modificados
+function loadNums(){
+  const saved=localStorage.getItem('em_nums');
+  if(saved){try{const p=JSON.parse(saved);if(p.main&&p.stars)return p;}catch(e){}}
+  return{main:[8,18,23,27,50],stars:[3,12]};
+}
+const _nums=loadNums();
+let OUR_MAIN=_nums.main, OUR_STARS=_nums.stars;
 const PEOPLE=[
   {name:"Eduard",  initials:"ED",color:"#0C447C",bg:"#BBCFE8"},
   {name:"Fran",    initials:"FR",color:"#3B6D11",bg:"#B8D89A"},
@@ -653,6 +710,10 @@ function checkPrize(){
   document.getElementById('wa-text').textContent=msg; lastWAMsg=msg;
   document.getElementById('result-area').style.display='block';
   setTimeout(()=>document.getElementById('result-area').scrollIntoView({behavior:'smooth',block:'start'}),100);
+  // Save draw for stats
+  if(drawData&&drawData.fecha){
+    localStorage.setItem('em_draw_'+drawData.fecha,JSON.stringify(drawData));
+  }
 }
 
 function loadHistory(){
@@ -666,11 +727,10 @@ function renderHistory(){
   const history=loadHistory();
   const total=history.reduce((s,e)=>s+e.amount,0);
   document.getElementById('total-amount').textContent=formatEur(total);
-  // Calcular gastos: cada ronda cuesta 20€ (coste del boleto)
-  // Contamos cuántas rondas han pasado desde el inicio
+  // Gastos
   const sorteosJugados=countSorteosJugados();
-  const costePorSorteo=20/8; // 20€ cada 8 sorteos = 2.50€/sorteo
-  const totalGastado=Math.floor(sorteosJugados/8)*20 + (sorteosJugados%8)*costePorSorteo;
+  const costePorSorteo=20/8;
+  const totalGastado=Math.floor(sorteosJugados/8)*20+(sorteosJugados%8)*costePorSorteo;
   const balance=total-totalGastado;
   const gastadoEl=document.getElementById('bal-gastado');
   const balanceEl=document.getElementById('bal-balance');
@@ -680,11 +740,65 @@ function renderHistory(){
     balanceEl.style.color=balance>=0?'#2E7D32':'#C62828';
   }
   document.getElementById('total-sub').textContent=
-    history.length===0?'Sin premios registrados todavía':
-    `${history.length} premio${history.length!==1?'s':''} registrado${history.length!==1?'s':''}`;
+    history.length===0?'Sin premios registrados':
+    `${history.length} premio${history.length!==1?'s':''}`;
+  // Estadísticas
+  const statSorteos=document.getElementById('stat-sorteos');
+  const statRacha=document.getElementById('stat-racha');
+  const statMejor=document.getElementById('stat-mejor');
+  const statAciertos=document.getElementById('stat-aciertos');
+  if(statSorteos) statSorteos.textContent=sorteosJugados;
+  if(statRacha){
+    const racha=sorteosJugados-history.length;
+    statRacha.textContent=racha>0?racha+' sorteos':'¡Premio!';
+    statRacha.style.color=racha>10?'#C62828':racha>5?'#F57F17':'#2E7D32';
+  }
+  if(statMejor){
+    statMejor.textContent=history.length===0?'—':formatEur(Math.max(...history.map(e=>e.amount)));
+    statMejor.style.fontSize=history.length===0?'22px':'16px';
+  }
+  // Aciertos por número
+  const hitCount={};
+  OUR_MAIN.forEach(n=>hitCount[n]=0);
+  let totalAciertos=0;
+  const epoch=new Date('2026-06-08T00:00:00');
+  const now=new Date();
+  const d=new Date(epoch);
+  while(d<=now){
+    if(d.getDay()===2||d.getDay()===5){
+      const fechaKey=d.getDate().toString().padStart(2,'0')+'/'+(d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getFullYear();
+      const drawStr=localStorage.getItem('em_draw_'+fechaKey);
+      if(drawStr){try{
+        const draw=JSON.parse(drawStr);
+        OUR_MAIN.forEach(n=>{if(draw.numeros.includes(n)){hitCount[n]++;totalAciertos++;}});
+      }catch(e){}}
+    }
+    d.setDate(d.getDate()+1);
+  }
+  if(statAciertos) statAciertos.textContent=totalAciertos;
+  // Frecuencia de números
+  const freqList=document.getElementById('num-freq-list');
+  if(freqList){
+    const maxHit=Math.max(1,...OUR_MAIN.map(n=>hitCount[n]));
+    const anyHit=OUR_MAIN.some(n=>hitCount[n]>0);
+    if(!anyHit){
+      freqList.innerHTML='<div class="empty-state" style="padding:12px 0;font-size:12px;">Comprueba premios para ver estadísticas de aciertos</div>';
+    }else{
+      freqList.innerHTML='';
+      [...OUR_MAIN].sort((a,b)=>hitCount[b]-hitCount[a]).forEach(n=>{
+        const row=document.createElement('div');row.className='num-freq-row';
+        const pct=Math.round(hitCount[n]/maxHit*100);
+        row.innerHTML=`<div class="num-freq-ball">${n}</div>
+          <div class="num-freq-bar-wrap"><div class="num-freq-bar" style="width:${pct}%"></div></div>
+          <span class="num-freq-count">${hitCount[n]}x</span>`;
+        freqList.appendChild(row);
+      });
+    }
+  }
+  // Historial
   const list=document.getElementById('history-list');
   if(history.length===0){
-    list.innerHTML='<div class="empty-state">Todavía no hay premios registrados 🍀<br><span style="font-size:12px;">Cuando toque algo, aparecerá aquí</span></div>';
+    list.innerHTML='<div class="empty-state">Todavía no hay premios 🍀<br><span style="font-size:12px;">Cuando toque algo, aparecerá aquí</span></div>';
     document.getElementById('reset-box').style.display='none';
     return;
   }
@@ -692,7 +806,7 @@ function renderHistory(){
   list.innerHTML='';
   [...history].reverse().forEach((e,ri)=>{
     const i=history.length-1-ri;
-    const row=document.createElement('div'); row.className='history-item';
+    const row=document.createElement('div');row.className='history-item';
     row.innerHTML=`<div class="history-info">
       <div class="history-label">${e.label}</div>
       <div class="history-date">${e.fecha}</div>
@@ -932,14 +1046,13 @@ async function onPersonChange(){
   if(sel===''){
     document.getElementById('notif-status-box').style.display='none';
     document.getElementById('notif-preview').style.display='none';
-    document.getElementById('avatar-section').style.display='none';
     return;
   }
   const idx=parseInt(sel);
-  const name=PEOPLE[idx].name;
-  document.getElementById('avatar-section').style.display='block';
-  buildAvatarPicker(name);
   localStorage.setItem('em_who',idx);
+  // Sync grupo selector
+  const grupoSel=document.getElementById('who-select-grupo');
+  if(grupoSel) grupoSel.value=idx;
   updateNotifStatusUI();
   updateNotifPreview(idx);
   buildScheduleList();
@@ -1130,6 +1243,141 @@ function getAvatarHTML(name,idx){
   return `<div style="width:36px;height:36px;border-radius:50%;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">${name.slice(0,2).toUpperCase()}</div>`;
 }
 
+// ── EDITOR DE NÚMEROS ────────────────────────────────────────────────────────
+let editMain=new Set(), editStars=new Set(), editMode=false;
+
+function renderNumsView(){
+  const vm=document.getElementById('view-main');
+  const vs=document.getElementById('view-star');
+  if(!vm||!vs) return;
+  vm.innerHTML=OUR_MAIN.map(n=>`<div class="ball our-main">${n}</div>`).join('');
+  vs.innerHTML=OUR_STARS.map(n=>`<div class="ball our-star">${n}</div>`).join('');
+}
+
+function toggleEditNums(){
+  editMode=!editMode;
+  document.getElementById('nums-view').style.display=editMode?'none':'block';
+  document.getElementById('nums-editor').style.display=editMode?'block':'none';
+  document.getElementById('edit-nums-btn').textContent=editMode?'✕ Cerrar':'✏️ Editar';
+  if(editMode) buildEditGrids();
+}
+
+function cancelEditNums(){
+  editMode=false;
+  document.getElementById('nums-view').style.display='block';
+  document.getElementById('nums-editor').style.display='none';
+  document.getElementById('edit-nums-btn').textContent='✏️ Editar';
+}
+
+function buildEditGrids(){
+  editMain=new Set(OUR_MAIN);
+  editStars=new Set(OUR_STARS);
+  // Main grid 1-50
+  const mg=document.getElementById('edit-main-grid');mg.innerHTML='';
+  for(let i=1;i<=50;i++){
+    const b=document.createElement('button');b.className='edit-num-btn'+(editMain.has(i)?' sel-main':'');
+    b.textContent=i;b.onclick=()=>toggleEditNum(i,'main',b);mg.appendChild(b);
+  }
+  // Star grid 1-12
+  const sg=document.getElementById('edit-star-grid');sg.innerHTML='';
+  for(let i=1;i<=12;i++){
+    const b=document.createElement('button');b.className='edit-num-btn'+(editStars.has(i)?' sel-star':'');
+    b.textContent=i;b.onclick=()=>toggleEditNum(i,'star',b);sg.appendChild(b);
+  }
+  updateEditCounts();
+}
+
+function toggleEditNum(n,type,btn){
+  if(type==='main'){
+    if(editMain.has(n)){editMain.delete(n);btn.className='edit-num-btn';}
+    else if(editMain.size<5){editMain.add(n);btn.className='edit-num-btn sel-main';}
+    else{showToast('Máximo 5 números');return;}
+  }else{
+    if(editStars.has(n)){editStars.delete(n);btn.className='edit-num-btn';}
+    else if(editStars.size<2){editStars.add(n);btn.className='edit-num-btn sel-star';}
+    else{showToast('Máximo 2 estrellas');return;}
+  }
+  updateEditCounts();
+}
+
+function updateEditCounts(){
+  document.getElementById('edit-main-count').textContent=editMain.size+'/5';
+  document.getElementById('edit-star-count').textContent=editStars.size+'/2';
+}
+
+function saveNums(){
+  if(editMain.size!==5){showToast('Elige exactamente 5 números');return;}
+  if(editStars.size!==2){showToast('Elige exactamente 2 estrellas');return;}
+  OUR_MAIN=[...editMain].sort((a,b)=>a-b);
+  OUR_STARS=[...editStars].sort((a,b)=>a-b);
+  localStorage.setItem('em_nums',JSON.stringify({main:OUR_MAIN,stars:OUR_STARS}));
+  cancelEditNums();
+  renderNumsView();
+  showToast('✅ Números guardados');
+}
+
+// ── GRUPO TAB ─────────────────────────────────────────────────────────────────
+function onGrupoPersonChange(){
+  const val=document.getElementById('who-select-grupo').value;
+  // Sync with avisos who-select
+  document.getElementById('who-select').value=val;
+  if(val===''){
+    document.getElementById('avatar-section-grupo').style.display='none';
+    return;
+  }
+  const idx=parseInt(val);
+  localStorage.setItem('em_who',idx);
+  const name=PEOPLE[idx].name;
+  document.getElementById('avatar-section-grupo').style.display='block';
+  buildAvatarPickerGrupo(name);
+}
+
+function restoreGrupoWho(){
+  const saved=localStorage.getItem('em_who');
+  if(saved!==null){
+    const el=document.getElementById('who-select-grupo');
+    if(el){el.value=saved;onGrupoPersonChange();}
+  }
+}
+
+function buildAvatarPickerGrupo(name){
+  const grid=document.getElementById('avatar-grid-grupo');
+  const current=getAvatar(name);
+  if(!grid) return;
+  grid.innerHTML='';
+  grid.style.display='none';
+  document.getElementById('av-arrow-grupo').textContent='›';
+  AVATARS.forEach(av=>{
+    const d=document.createElement('div');
+    d.className='av-opt'+(current===av?' selected':'');
+    d.textContent=av;
+    d.onclick=()=>selectAvatarGrupo(name,av,d);
+    grid.appendChild(d);
+  });
+  document.getElementById('av-current-emoji-grupo').textContent=current||'😀';
+}
+
+function toggleAvatarGridGrupo(){
+  const grid=document.getElementById('avatar-grid-grupo');
+  const arrow=document.getElementById('av-arrow-grupo');
+  const open=grid.style.display==='none';
+  grid.style.display=open?'flex':'none';
+  arrow.textContent=open?'⌃':'›';
+}
+
+function selectAvatarGrupo(name,emoji,el){
+  saveAvatar(name,emoji);
+  document.querySelectorAll('#avatar-grid-grupo .av-opt').forEach(d=>d.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('av-current-emoji-grupo').textContent=emoji;
+  document.getElementById('avatar-grid-grupo').style.display='none';
+  document.getElementById('av-arrow-grupo').textContent='›';
+  buildTurns();
+  buildBizumConfirm();
+  buildMembers();
+  showToast('Avatar guardado ✅');
+}
+
 // ── WA HELPERS ───────────────────────────────────────────────────────────────
 function copyMsg(){navigator.clipboard.writeText(lastWAMsg).then(()=>showToast('✅ Copiado')).catch(()=>showToast('Copia manualmente'));}
 function openWA(){window.open('https://wa.me/?text='+encodeURIComponent(lastWAMsg),'_blank');}
@@ -1142,6 +1390,7 @@ buildBizumConfirm();
 buildWABizum();
 buildMembers();
 renderHistory();
+renderNumsView();
 initDraw();
 restoreWho();
 // Registrar Service Worker al cargar
