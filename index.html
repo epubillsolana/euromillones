@@ -327,11 +327,12 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
 
     <div class="avatar-section" id="avatar-section" style="display:none;">
       <span class="avatar-label">Tu avatar</span>
-      <div class="av-current" id="av-current">
+      <div class="av-current" id="av-current" onclick="toggleAvatarGrid()" style="cursor:pointer;">
         <span class="av-current-emoji" id="av-current-emoji">😀</span>
-        <span class="av-current-info">Tu avatar actual — tócalo para cambiarlo</span>
+        <span class="av-current-info">Tócalo para cambiarlo</span>
+        <span id="av-arrow" style="margin-left:auto;font-size:14px;color:var(--text3);">›</span>
       </div>
-      <div class="avatar-grid" id="avatar-grid"></div>
+      <div class="avatar-grid" id="avatar-grid" style="display:none;margin-top:10px;"></div>
     </div>
   </div>
   <div id="notif-status-box" style="display:none;">
@@ -783,8 +784,21 @@ function getMyIdx(){return parseInt(localStorage.getItem('em_who')??'-1');}
 function getNotifMessage(myIdx){
   const payerIdx=getCurrentPayerIdx(),payer=PEOPLE[payerIdx];
   const others=PEOPLE.filter((_,i)=>i!==payerIdx).map(p=>p.name);
-  if(myIdx===payerIdx)
-    return{title:"🎰 ¡Te toca jugar al Euromillones!",body:`Recuerda comprar el boleto esta semana. El grupo te hará el Bizum de 4€ (${others.join(', ')}).`};
+  const myName=PEOPLE[myIdx].name;
+  // Check if this person already confirmed their Bizum
+  const bizumState=getBizumState();
+  const bizumDone=!!bizumState[myName];
+  if(myIdx===payerIdx){
+    // Check who still hasn't paid
+    const pending=others.filter(n=>!bizumState[n]);
+    const body=pending.length===0
+      ?'¡Todos han confirmado el Bizum! Solo recuerda comprar el boleto.'
+      :`Pendiente de Bizum: ${pending.join(', ')}. Recuerda comprar el boleto.`;
+    return{title:'🎰 ¡Te toca jugar al Euromillones!',body};
+  }
+  // Not the payer
+  if(bizumDone)
+    return{title:'🎰 Euromillones esta semana',body:`Ya tienes el Bizum hecho a ${payer.name}. ¡A esperar el sorteo!`};
   return{title:`💸 Bizum de 4€ a ${payer.name}`,body:`Esta semana juega ${payer.name}. Recuerda hacerle el Bizum de 4€.`};
 }
 
@@ -1072,6 +1086,8 @@ function buildAvatarPicker(name){
   const current=getAvatar(name);
   if(!grid) return;
   grid.innerHTML='';
+  grid.style.display='none'; // always start collapsed
+  document.getElementById('av-arrow').textContent='›';
   AVATARS.forEach(av=>{
     const d=document.createElement('div');
     d.className='av-opt'+(current===av?' selected':'');
@@ -1079,9 +1095,17 @@ function buildAvatarPicker(name){
     d.onclick=()=>selectAvatar(name,av,d);
     grid.appendChild(d);
   });
-  // Update current display
+  // Show current avatar (default 😀)
   const currentEmoji=current||'😀';
   document.getElementById('av-current-emoji').textContent=currentEmoji;
+}
+
+function toggleAvatarGrid(){
+  const grid=document.getElementById('avatar-grid');
+  const arrow=document.getElementById('av-arrow');
+  const open=grid.style.display==='none';
+  grid.style.display=open?'flex':'none';
+  arrow.textContent=open?'⌃':'›';
 }
 
 function selectAvatar(name,emoji,el){
@@ -1089,6 +1113,9 @@ function selectAvatar(name,emoji,el){
   document.querySelectorAll('.av-opt').forEach(d=>d.classList.remove('selected'));
   el.classList.add('selected');
   document.getElementById('av-current-emoji').textContent=emoji;
+  // Close grid after selection
+  document.getElementById('avatar-grid').style.display='none';
+  document.getElementById('av-arrow').textContent='›';
   buildTurns();
   buildBizumConfirm();
   showToast('Avatar guardado ✅');
