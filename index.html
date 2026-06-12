@@ -7,25 +7,25 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Euromillones">
 <meta name="theme-color" content="#25A244">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎰</text></svg>">
 <title>🎰 Euromillones del grupo</title>
 <style>
 :root{
-  --blue:#0C447C;--blue-light:#E6F1FB;--blue-mid:#378ADD;
-  --gold:#BA7517;--gold-light:#FAEEDA;--gold-mid:#EF9F27;
-  --green:#3B6D11;--green-light:#EAF3DE;--green-mid:#639922;
-  --red:#A32D2D;--red-light:#FCEBEB;
-  --bg:#F5F5F3;--surface:#FFFFFF;--surface2:#F0EEE8;
-  --text:#1A1A18;--text2:#6B6B65;--text3:#9E9E98;
-  --border:rgba(0,0,0,0.10);--border2:rgba(0,0,0,0.18);
-  --radius:14px;--radius-sm:8px;--wa-green:#25D366;
+  --blue:#1565C0;--blue-light:#E3F2FD;--blue-mid:#42A5F5;
+  --gold:#F57F17;--gold-light:#FFF9C4;--gold-mid:#FFD54F;
+  --green:#2E7D32;--green-light:#E8F5E9;--green-mid:#66BB6A;
+  --saica:#25A244;--saica-dark:#1a6b2f;
+  --red:#C62828;--red-light:#FFEBEE;
+  --orange:#E65100;--orange-light:#FFF3E0;
+  --purple:#6A1B9A;--purple-light:#F3E5F5;
+  --teal:#00695C;--teal-light:#E0F2F1;
+  --bg:#F8F9FA;--surface:#FFFFFF;--surface2:#F1F3F4;
+  --text:#1A1A18;--text2:#5F6368;--text3:#9AA0A6;
+  --border:rgba(0,0,0,0.08);--border2:rgba(0,0,0,0.15);
+  --radius:16px;--radius-sm:10px;--wa-green:#25D366;
+  --shadow:0 2px 8px rgba(0,0,0,0.08),0 1px 2px rgba(0,0,0,0.05);
 }
-@media(prefers-color-scheme:dark){:root{
-  --bg:#111110;--surface:#1E1E1C;--surface2:#2A2A28;
-  --text:#F0EEE8;--text2:#A0A098;--text3:#606058;
-  --border:rgba(255,255,255,0.10);--border2:rgba(255,255,255,0.18);
-  --blue-light:#0A2540;--gold-light:#2A1D06;--green-light:#0F2006;--red-light:#2A0A0A;
-}}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:env(safe-area-inset-bottom,24px);}
 .header{background:linear-gradient(160deg,#1a6b2f 0%,#25A244 60%,#1a6b2f 100%);color:#fff;padding:52px 20px 22px;text-align:center;position:relative;overflow:hidden;}
@@ -39,12 +39,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .header-divider{width:40px;height:2px;background:rgba(255,255,255,0.4);margin:8px auto 6px;border-radius:2px;}
 .tabbar{display:flex;background:var(--surface);border-bottom:.5px solid var(--border);position:sticky;top:0;z-index:100;}
 .tab-btn{flex:1;padding:13px 2px 11px;font-size:10px;font-weight:600;color:var(--text3);border:none;background:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s;border-bottom:2px solid transparent;}
-.tab-btn .icon{font-size:18px;}
-.tab-btn.active{color:#25A244;border-bottom-color:#25A244;}
-.section{display:none;padding:16px;}
+.tab-btn .icon{font-size:20px;line-height:1;}
+.tab-btn .icon i{font-size:22px;}
+.tab-btn.active{color:var(--saica);border-bottom-color:var(--saica);}
+.tab-btn:hover:not(.active){background:var(--green-light);}
+.section{display:none;padding:14px 16px;}
 .section.active{display:block;}
-.card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:12px;border:.5px solid var(--border);}
-.card-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;}
+.card{background:var(--surface);border-radius:var(--radius);padding:16px;margin-bottom:12px;border:.5px solid var(--border);box-shadow:var(--shadow);}
+.card-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px;}
 .ball-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:center;}
 .ball{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
 .ball.our-main{background:var(--blue);color:#fff;}
@@ -54,18 +56,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ball.hit{background:#E8523A;color:#fff;}
 .ball.star-hit{background:#E8523A;color:#fff;}
 .ball.no-hit{background:var(--surface2);color:var(--text3);border:1px solid var(--border2);opacity:0.4;}
-.star-sep{font-size:12px;color:var(--text3);}
+.star-sep{font-size:14px;color:var(--gold);}
 .btn{width:100%;padding:14px;border-radius:var(--radius-sm);font-size:16px;font-weight:600;cursor:pointer;border:none;margin-top:8px;transition:opacity .15s,transform .1s;}
 .btn:active{transform:scale(.98);}
 .btn-blue{background:#25A244;color:#fff;}
-.btn-green{background:var(--green);color:#fff;}
+.btn-green{background:linear-gradient(135deg,var(--saica-dark),var(--saica));color:#fff;box-shadow:0 4px 12px rgba(37,162,68,0.3);}
 .btn-gray{background:var(--surface2);color:var(--text);border:.5px solid var(--border2);}
 .btn:disabled{opacity:.35;cursor:not-allowed;}
 .prize-box{border-radius:var(--radius);padding:20px;text-align:center;margin-bottom:12px;}
 .prize-box.none{background:var(--surface2);border:.5px solid var(--border);}
-.prize-box.small{background:var(--green-light);border:.5px solid var(--green-mid);}
-.prize-box.medium{background:var(--gold-light);border:.5px solid var(--gold-mid);}
-.prize-box.big{background:var(--blue-light);border:.5px solid var(--blue-mid);}
+.prize-box.small{background:linear-gradient(135deg,#E8F5E9,#F1F8E9);border:.5px solid var(--green-mid);box-shadow:0 4px 16px rgba(46,125,50,0.12);}
+.prize-box.medium{background:linear-gradient(135deg,#FFF9C4,#FFF3E0);border:.5px solid var(--gold-mid);box-shadow:0 4px 16px rgba(245,127,23,0.15);}
+.prize-box.big{background:linear-gradient(135deg,#E3F2FD,#E8EAF6);border:.5px solid var(--blue-mid);box-shadow:0 4px 16px rgba(21,101,192,0.15);}
 .prize-emoji{font-size:36px;margin-bottom:8px;}
 .prize-title{font-size:17px;font-weight:700;}
 .prize-title.none{color:var(--text);}
@@ -78,9 +80,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .prize-amount.big{color:var(--blue);}
 .prize-sub{font-size:13px;color:var(--text2);margin-top:4px;}
 .info-box{border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px;font-size:13px;line-height:1.6;}
-.info-box.blue{background:var(--blue-light);color:var(--blue);border:.5px solid var(--blue-mid);}
-.info-box.green{background:var(--green-light);color:var(--green);border:.5px solid var(--green-mid);}
-.info-box.yellow{background:var(--gold-light);color:var(--gold);border:.5px solid var(--gold-mid);}
+.info-box.blue{background:var(--blue-light);color:var(--blue);border:.5px solid var(--blue-mid);border-radius:12px;}
+.info-box.green{background:var(--green-light);color:var(--green);border:.5px solid var(--green-mid);border-radius:12px;}
+.info-box.yellow{background:var(--gold-light);color:var(--gold);border:.5px solid var(--gold-mid);border-radius:12px;}
 .wa-box{background:var(--surface2);border-radius:var(--radius-sm);padding:12px;font-size:12px;color:var(--text);line-height:1.7;white-space:pre-wrap;border:.5px solid var(--border);font-family:'Courier New',monospace;margin-bottom:10px;min-height:60px;}
 .wa-btns{display:flex;gap:8px;}
 .btn-wa{flex:1;padding:12px 8px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s,transform .1s;}
@@ -98,9 +100,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .person-name{font-size:15px;font-weight:600;color:var(--text);}
 .person-sub{font-size:12px;color:var(--text2);margin-top:1px;}
 .badge{font-size:11px;font-weight:600;padding:4px 11px;border-radius:99px;}
-.badge-active{background:var(--green-light);color:var(--green);}
-.badge-next{background:var(--gold-light);color:var(--gold);}
-.badge-wait{background:var(--surface2);color:var(--text3);}
+.badge-active{background:var(--green-light);color:var(--green);font-size:11px;font-weight:700;}
+.badge-next{background:var(--gold-light);color:var(--gold);font-size:11px;font-weight:700;}
+.badge-wait{background:var(--surface2);color:var(--text3);font-size:11px;font-weight:700;}
 .loader{text-align:center;padding:24px;color:var(--text2);font-size:14px;}
 .spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin-right:8px;vertical-align:middle;}
 @keyframes spin{to{transform:rotate(360deg);}}
@@ -152,15 +154,14 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
   </div>
   <div class="header-divider"></div>
   <h1>🎰 Euromillón SAICA</h1>
-  <p>Eduard · Fran · Jessi · Natalia · Elena</p>
 </div>
 
 <div class="tabbar">
-  <button class="tab-btn active" onclick="switchTab('comprobar',this)"><span class="icon">🔍</span>Comprobar</button>
-  <button class="tab-btn" onclick="switchTab('turnos',this)"><span class="icon">👥</span>Turnos</button>
-  <button class="tab-btn" onclick="switchTab('premios',this)"><span class="icon">💰</span>Premios</button>
-  <button class="tab-btn" onclick="switchTab('avisos',this)"><span class="icon">🔔</span>Avisos</button>
-  <button class="tab-btn" onclick="switchTab('numeros',this)"><span class="icon">🎱</span>Números</button>
+  <button class="tab-btn active" onclick="switchTab('comprobar',this)"><span class="icon"><i class="ti ti-search"></i></span>Comprobar</button>
+  <button class="tab-btn" onclick="switchTab('turnos',this)"><span class="icon"><i class="ti ti-users"></i></span>Turnos</button>
+  <button class="tab-btn" onclick="switchTab('premios',this)"><span class="icon"><i class="ti ti-trophy"></i></span>Premios</button>
+  <button class="tab-btn" onclick="switchTab('avisos',this)"><span class="icon"><i class="ti ti-bell"></i></span>Avisos</button>
+  <button class="tab-btn" onclick="switchTab('numeros',this)"><span class="icon"><i class="ti ti-ticket"></i></span>Números</button>
 </div>
 
 <!-- ── COMPROBAR ─────────────────────────────────────────────────────────── -->
@@ -522,14 +523,23 @@ function checkPrize(){
     if(!isNaN(num)) document.getElementById('real-amount').value=num;
   }
   const emojiMsg=prize.cat==='big'?'🏆':prize.cat==='medium'?'🎉':prize.cat==='small'?'🍀':'😅';
-  // Construir línea de números resaltando aciertos con 🔵 y no-aciertos con ⚪
-  const numLine=[...numeros].sort((a,b)=>a-b).map(n=>hitM.includes(n)?`🔵${n}`:`⚪${n}`).join(' ');
-  const starLine=[...estrellas].sort((a,b)=>a-b).map(n=>hitS.includes(n)?`🟡${n}`:`⚪${n}`).join(' ');
-  // Resumen de aciertos
-  const resumen=hitM.length===0&&hitS.length===0
-    ?'❌ Sin aciertos esta vez'
-    :`✅ ${hitM.length>0?hitM.map(n=>`*${n}*`).join(', '):'—'} ${hitS.length>0?'⭐'+hitS.map(n=>`*${n}*`).join(', '):''}`;
-  const msg=`${emojiMsg} *Euromillones ${fecha}*\n\n🎱 Nuestros números:\n${OUR_MAIN.join(' · ')}  ⭐ ${OUR_STARS.join(' · ')}\n\n🔢 Sorteo premiado:\n${numLine}  ⭐ ${starLine}\n\n${resumen}\n🏅 ${prize.label}${prize.approx?' · '+prize.approx:''}\n\n💳 Paga esta ronda: *${payer.name}*\n💸 Bizum de 4€ a ${payer.name}:\n${others.map(o=>'   · '+o).join('\n')}`;
+  const numLine=[...numeros].sort((a,b)=>a-b).map(n=>hitM.includes(n)?`🔵 *${n}*`:`⚪ ${n}`).join(' ');
+  const starLine=[...estrellas].sort((a,b)=>a-b).map(n=>hitS.includes(n)?`🟡 *${n}*`:`⚪ ${n}`).join(' ');
+  const aciertosLine=hitM.length===0&&hitS.length===0
+    ?'❌ *Sin aciertos esta vez*'
+    :`✅ Números: *${hitM.length>0?hitM.join(', '):'ninguno'}*  ·  Estrellas: *${hitS.length>0?hitS.join(', '):'ninguna'}*`;
+  const msg=`${emojiMsg} *EUROMILLÓN SAICA — ${fecha}*`
+    +`\n${'─'.repeat(28)}`
+    +`\n\n🎱 *Nuestros números*`
+    +`\n${OUR_MAIN.join(' · ')}  ⭐ ${OUR_STARS.join(' · ')}`
+    +`\n\n🔢 *Sorteo premiado*`
+    +`\n${numLine}  ⭐ ${starLine}`
+    +`\n\n${aciertosLine}`
+    +`\n🏅 *${prize.label}*${prize.approx?' — '+prize.approx:''}`
+    +`\n${'─'.repeat(28)}`
+    +`\n💳 Paga esta ronda: *${payer}*`
+    +`\n💸 Bizum de *${CFG.bizum}€* a ${payer}:`
+    +`\n${others.map(o=>'   · '+o).join('\n')}`;
   document.getElementById('wa-text').textContent=msg; lastWAMsg=msg;
   document.getElementById('result-area').style.display='block';
   setTimeout(()=>document.getElementById('result-area').scrollIntoView({behavior:'smooth',block:'start'}),100);
