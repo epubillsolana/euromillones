@@ -197,14 +197,14 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
   <button class="tab-btn" onclick="switchTab('bizum',this)"><span class="icon"><i class="ti ti-cash"></i></span>Bizum</button>
   <button class="tab-btn" onclick="switchTab('premios',this)"><span class="icon"><i class="ti ti-trophy"></i></span>Premios</button>
   <button class="tab-btn" onclick="switchTab('avisos',this)"><span class="icon"><i class="ti ti-bell"></i></span>Avisos</button>
-  <button class="tab-btn" onclick="switchTab('numeros',this)"><span class="icon"><i class="ti ti-ticket"></i></span>Números</button>
+  <button class="tab-btn" onclick="switchTab('grupo',this)"><span class="icon"><i class="ti ti-users"></i></span>Grupo</button>
 </div>
 
 <!-- ── COMPROBAR ─────────────────────────────────────────────────────────── -->
 <div class="section active" id="tab-comprobar">
   <div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-      <div class="card-label" style="margin-bottom:0;">Nuestros números</div>
+      <div class="card-label" style="margin-bottom:0;">🌟 Euromillones — Nuestros números</div>
       <button onclick="toggleEditNums()" id="edit-nums-btn" style="padding:4px 12px;border-radius:99px;background:var(--surface2);border:1px solid var(--border2);font-size:11px;font-weight:700;cursor:pointer;color:var(--text2);">✏️ Editar</button>
     </div>
     <div id="nums-view">
@@ -343,7 +343,7 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
       </div>
       <div class="stat-card">
         <div class="stat-val" id="stat-aciertos">0</div>
-        <div class="stat-lbl">Total aciertos</div>
+        <div class="stat-lbl">Mejor sorteo</div>
       </div>
     </div>
     <div class="card-label" style="margin-top:8px;margin-bottom:10px;">Números más acertados</div>
@@ -355,7 +355,7 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
     <div class="card-label">Historial de premios</div>
     <div id="history-list"><div class="empty-state">Todavía no hay premios registrados 🍀<br><span style="font-size:12px;">Cuando toque algo, aparecerá aquí</span></div></div>
     <div class="add-prize-row" style="margin-top:10px;">
-      <input type="number" id="manual-amount" placeholder="€ añadir premio" min="0" step="0.01">
+      <input type="number" id="manual-amount" placeholder="€ importe (premios anteriores)" min="0" step="0.01">
       <button onclick="addManualPrize()">+ Añadir</button>
     </div>
   </div>
@@ -427,24 +427,6 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
       </div>
       <div class="avatar-grid" id="avatar-grid-grupo" style="display:none;margin-top:10px;"></div>
     </div>
-  </div>
-  <div class="card">
-    <div class="card-label">Tabla de premios Euromillones</div>
-    <table class="prize-table">
-      <tr><th>Aciertos</th><th class="amt">Premio aprox.</th></tr>
-      <tr><td>5 + 2 ⭐</td><td class="amt amt-big">El bote (millones)</td></tr>
-      <tr><td>5 + 1 ⭐</td><td class="amt amt-big">~500.000 €</td></tr>
-      <tr><td>5 + 0 ⭐</td><td class="amt amt-big">~100.000 €</td></tr>
-      <tr><td>4 + 2 ⭐</td><td class="amt amt-med">~3.000 €</td></tr>
-      <tr><td>4 + 1 ⭐</td><td class="amt amt-med">~150 €</td></tr>
-      <tr><td>3 + 2 ⭐</td><td class="amt amt-med">~80 €</td></tr>
-      <tr><td>4 + 0 ⭐</td><td class="amt amt-small">~40 €</td></tr>
-      <tr><td>2 + 2 ⭐</td><td class="amt amt-small">~18 €</td></tr>
-      <tr><td>3 + 1 ⭐</td><td class="amt amt-small">~14 €</td></tr>
-      <tr><td>3 + 0 ⭐</td><td class="amt amt-small">~10 €</td></tr>
-      <tr><td>1 + 2 ⭐</td><td class="amt amt-small">~9 €</td></tr>
-      <tr><td>2 + 1 ⭐</td><td class="amt amt-small">~6 €</td></tr>
-    </table>
   </div>
 </div><div class="toast" id="toast"></div>
 
@@ -714,6 +696,13 @@ function checkPrize(){
   if(drawData&&drawData.fecha){
     localStorage.setItem('em_draw_'+drawData.fecha,JSON.stringify(drawData));
   }
+  // Auto-add prize to balance if detected and not already added
+  if(prize.cat!=='none'){
+    const prizeKey='em_autoprize_'+drawData.fecha;
+    if(!localStorage.getItem(prizeKey)){
+      document.getElementById('add-to-total-box').style.display='block';
+    }
+  }
 }
 
 function loadHistory(){
@@ -775,7 +764,28 @@ function renderHistory(){
     }
     d.setDate(d.getDate()+1);
   }
-  if(statAciertos) statAciertos.textContent=totalAciertos;
+  // Mejor sorteo = max aciertos en un sorteo
+  let mejorSorteo=0;
+  const epochS=new Date('2026-06-08T00:00:00');
+  const nowS=new Date();
+  const dS=new Date(epochS);
+  while(dS<=nowS){
+    if(dS.getDay()===2||dS.getDay()===5){
+      const fk=dS.getDate().toString().padStart(2,'0')+'/'+(dS.getMonth()+1).toString().padStart(2,'0')+'/'+dS.getFullYear();
+      const drawStr=localStorage.getItem('em_draw_'+fk);
+      if(drawStr){try{
+        const draw=JSON.parse(drawStr);
+        const hm=OUR_MAIN.filter(n=>draw.numeros.includes(n)).length;
+        const hs=OUR_STARS.filter(n=>draw.estrellas.includes(n)).length;
+        if(hm+hs>mejorSorteo) mejorSorteo=hm+hs;
+      }catch(e){}}
+    }
+    dS.setDate(dS.getDate()+1);
+  }
+  if(statAciertos){
+    statAciertos.textContent=mejorSorteo>0?mejorSorteo+' aciertos':'—';
+    statAciertos.style.fontSize=mejorSorteo>0?'18px':'22px';
+  }
   // Frecuencia de números
   const freqList=document.getElementById('num-freq-list');
   if(freqList){
@@ -837,6 +847,8 @@ function addPrizeFromResult(){
   if(addPrize(amount, prize, drawData.fecha)){
     input.value='';
     document.getElementById('add-to-total-box').style.display='none';
+    // Mark as added so we don't show again
+    localStorage.setItem('em_autoprize_'+drawData.fecha,'1');
   }
 }
 
