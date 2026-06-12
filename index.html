@@ -449,9 +449,22 @@ function parseFecha(html){
 }
 
 async function initDraw(){
+  // Mostrar FALLBACK inmediatamente — botón siempre activo
+  drawData=FALLBACK;
+  renderDraw(FALLBACK);
+  // Intentar actualizar en segundo plano sin bloquear
+  try{
+    const fresh=await fetchLatestDraw();
+    if(fresh&&fresh.numeros){
+      drawData=fresh;
+      renderDraw(fresh);
+    }
+  }catch(e){}
+}
+
+function renderDraw(data){
   const area=document.getElementById('sorteo-area');
-  drawData=await fetchLatestDraw();
-  const{fecha,numeros,estrellas,bote}=drawData;
+  const{fecha,numeros,estrellas,bote}=data;
   area.innerHTML=`
     <div class="draw-meta"><span>📅 Sorteo del ${fecha}</span><span>💰 Bote: ${bote}</span></div>
     <div class="ball-row">
@@ -462,7 +475,6 @@ async function initDraw(){
   document.getElementById('btn-check').disabled=false;
 }
 
-// ── COMPROBAR ────────────────────────────────────────────────────────────────
 function getPrize(nm,ns){
   const t=[
     {m:5,s:2,emoji:"🏆",label:"¡JACKPOT! 5 + 2 estrellas",approx:"El bote completo",cat:"big"},
