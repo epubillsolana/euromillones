@@ -487,7 +487,6 @@ function checkPrize(){
   const{fecha,numeros,estrellas}=drawData;
   const hitM=OUR_MAIN.filter(n=>numeros.includes(n));
   const hitS=OUR_STARS.filter(n=>estrellas.includes(n));
-  // No resaltar en la sección del sorteo, solo en el resultado de abajo
   OUR_MAIN.forEach(n=>{const el=document.getElementById('sn-'+n);if(el)el.className='ball draw-main';});
   OUR_STARS.forEach(n=>{const el=document.getElementById('ss-'+n);if(el)el.className='ball draw-star';});
   const prize=getPrize(hitM.length,hitS.length);
@@ -504,20 +503,15 @@ function checkPrize(){
   document.getElementById('prize-sub').textContent=
     hitM.length===0&&hitS.length===0?'Ningún acierto. ¡Suerte el próximo sorteo!':`Núm: ${hitM.length>0?hitM.join(', '):'—'}  ·  Estrellas: ${hitS.length>0?hitS.join(', '):'—'}`;
   const hb=document.getElementById('hit-balls'); hb.innerHTML='';
-  // Label de aciertos
   const lbl=document.createElement('div');
   lbl.style.cssText='width:100%;text-align:center;font-size:12px;font-weight:600;color:var(--text3);margin-bottom:6px;letter-spacing:.05em;text-transform:uppercase;';
-  const aciertosText=hitM.length===0&&hitS.length===0?'Sin aciertos':`✅ ${hitM.length} número${hitM.length!==1?'s':''} + ${hitS.length} estrella${hitS.length!==1?'s':''}`;
-  lbl.textContent=aciertosText;
+  lbl.textContent=hitM.length===0&&hitS.length===0?'Sin aciertos':`✅ ${hitM.length} número${hitM.length!==1?'s':''} + ${hitS.length} estrella${hitS.length!==1?'s':''}`;
   hb.appendChild(lbl);
-  // Bolas del sorteo — las que coinciden resaltan, las que no se atenúan
   [...numeros].sort((a,b)=>a-b).forEach(n=>{const b=document.createElement('div');b.className='ball '+(hitM.includes(n)?'hit':'no-hit');b.textContent=n;hb.appendChild(b);});
-  const sep=document.createElement('span');sep.className='star-sep';sep.textContent='⭐';hb.appendChild(sep);
+  const starSep=document.createElement('span');starSep.className='star-sep';starSep.textContent='⭐';hb.appendChild(starSep);
   [...estrellas].sort((a,b)=>a-b).forEach(n=>{const b=document.createElement('div');b.className='ball '+(hitS.includes(n)?'hit':'no-hit');b.textContent=n;hb.appendChild(b);});
-  // Mostrar opción de añadir al total si hay premio
   document.getElementById('add-to-total-box').style.display=prize.cat!=='none'?'block':'none';
   if(prize.cat!=='none'){
-    // Pre-rellenar con el importe aproximado numérico
     const approxNum=prize.approx.replace(/[~€\s.]/g,'').replace(',','.');
     const num=parseFloat(approxNum);
     if(!isNaN(num)) document.getElementById('real-amount').value=num;
@@ -528,24 +522,24 @@ function checkPrize(){
   const aciertosLine=hitM.length===0&&hitS.length===0
     ?'❌ *Sin aciertos esta vez*'
     :`✅ Números: *${hitM.length>0?hitM.join(', '):'ninguno'}*  ·  Estrellas: *${hitS.length>0?hitS.join(', '):'ninguna'}*`;
-  const msg=`${emojiMsg} *EUROMILLÓN SAICA — ${fecha}*`
-    +`\n${'─'.repeat(28)}`
-    +`\n\n🎱 *Nuestros números*`
-    +`\n${OUR_MAIN.join(' · ')}  ⭐ ${OUR_STARS.join(' · ')}`
-    +`\n\n🔢 *Sorteo premiado*`
-    +`\n${numLine}  ⭐ ${starLine}`
-    +`\n\n${aciertosLine}`
-    +`\n🏅 *${prize.label}*${prize.approx?' — '+prize.approx:''}`
-    +`\n${'─'.repeat(28)}`
-    +`\n💳 Paga esta ronda: *${payer}*`
-    +`\n💸 Bizum de *${CFG.bizum}€* a ${payer}:`
-    +`\n${others.map(o=>'   · '+o).join('\n')}`;
+  const lineSep='─'.repeat(28);
+  const msg=emojiMsg+' *EUROMILLÓN SAICA — '+fecha+'*'
+    +'\n'+lineSep
+    +'\n\n🎱 *Nuestros números*'
+    +'\n'+OUR_MAIN.join(' · ')+'  ⭐ '+OUR_STARS.join(' · ')
+    +'\n\n🔢 *Sorteo premiado*'
+    +'\n'+numLine+'  ⭐ '+starLine
+    +'\n\n'+aciertosLine
+    +'\n🏅 *'+prize.label+'*'+(prize.approx?' — '+prize.approx:'')
+    +'\n'+lineSep
+    +'\n💳 Paga esta ronda: *'+payer+'*'
+    +'\n💸 Bizum de *4€* a '+payer+':'
+    +'\n'+others.map(o=>'   · '+o).join('\n');
   document.getElementById('wa-text').textContent=msg; lastWAMsg=msg;
   document.getElementById('result-area').style.display='block';
   setTimeout(()=>document.getElementById('result-area').scrollIntoView({behavior:'smooth',block:'start'}),100);
 }
 
-// ── PREMIOS / HISTORIAL ───────────────────────────────────────────────────────
 function loadHistory(){
   try{return JSON.parse(localStorage.getItem('em_prizes')||'[]');}catch(e){return[];}
 }
