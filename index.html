@@ -155,6 +155,14 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
 .played-btn.yes{background:#E8F5E9;color:#2E7D32;border:1px solid #A5D6A7;}
 .played-btn.no{background:#FFEBEE;color:#C62828;border:1px solid #FFCDD2;}
 .played-btn.unknown{background:var(--surface2);color:var(--text2);border:1px solid var(--border2);}
+.avatar-section{margin-top:14px;padding-top:14px;border-top:.5px solid var(--border);}
+.avatar-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px;display:block;}
+.avatar-grid{display:flex;flex-wrap:wrap;gap:8px;}
+.av-opt{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;border:2px solid transparent;background:var(--surface2);transition:all .15s;}
+.av-opt.selected{border-color:var(--green,#2E7D32);transform:scale(1.15);background:var(--green-light,#E8F5E9);}
+.av-current{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:10px;}
+.av-current-emoji{font-size:28px;}
+.av-current-info{font-size:13px;color:var(--text2);}
 .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.82);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap;}
 .toast.show{opacity:1;}
 </style>
@@ -316,6 +324,15 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
       <option value="3">Natalia</option>
       <option value="4">Elena</option>
     </select>
+
+    <div class="avatar-section" id="avatar-section" style="display:none;">
+      <span class="avatar-label">Tu avatar</span>
+      <div class="av-current" id="av-current">
+        <span class="av-current-emoji" id="av-current-emoji">😀</span>
+        <span class="av-current-info">Tu avatar actual — tócalo para cambiarlo</span>
+      </div>
+      <div class="avatar-grid" id="avatar-grid"></div>
+    </div>
   </div>
   <div id="notif-status-box" style="display:none;">
     <div id="notif-status-row" class="notif-status warn">
@@ -740,7 +757,7 @@ function buildTurns(){
   PEOPLE.forEach((p,i)=>{
     const isActive=i===idx, isNext=i===(idx+1)%5;
     const row=document.createElement('div'); row.className='person-row';
-    row.innerHTML=`<div class="avatar" style="background:${p.bg};color:${p.color};">${p.initials}</div>
+    row.innerHTML=`${getAvatarHTML(p.name,i)}
       <div class="person-info"><div class="person-name">${p.name}</div>
       <div class="person-sub">${isActive?'Paga 20€ · turno activo':isNext?'Siguiente en pagar':'En espera'}</div></div>
       <span class="badge ${isActive?'badge-active':isNext?'badge-next':'badge-wait'}">${isActive?'Activo':isNext?'Siguiente':'Espera'}</span>`;
@@ -753,7 +770,7 @@ function buildMembers(){
   const idx=getCurrentPayerIdx(), list=document.getElementById('members-list'); list.innerHTML='';
   PEOPLE.forEach((p,i)=>{
     const row=document.createElement('div'); row.className='person-row';
-    row.innerHTML=`<div class="avatar" style="background:${p.bg};color:${p.color};">${p.initials}</div>
+    row.innerHTML=`${getAvatarHTML(p.name,i)}
       <div class="person-info"><div class="person-name">${p.name}</div>
       <div class="person-sub">${i===idx?'💳 Paga esta ronda (20€)':'💸 Bizum de 4€'}</div></div>`;
     list.appendChild(row);
@@ -901,9 +918,13 @@ async function onPersonChange(){
   if(sel===''){
     document.getElementById('notif-status-box').style.display='none';
     document.getElementById('notif-preview').style.display='none';
+    document.getElementById('avatar-section').style.display='none';
     return;
   }
   const idx=parseInt(sel);
+  const name=PEOPLE[idx].name;
+  document.getElementById('avatar-section').style.display='block';
+  buildAvatarPicker(name);
   localStorage.setItem('em_who',idx);
   updateNotifStatusUI();
   updateNotifPreview(idx);
@@ -1034,6 +1055,52 @@ function countSorteosJugados(){
     d.setDate(d.getDate()+1);
   }
   return count;
+}
+
+// ── AVATARES ──────────────────────────────────────────────────────────────────
+const AVATARS=['😀','😎','🤩','🥳','🤠','🧐','🥸','😏','🤑','😈','👽','🤖','🦸','🦹','🧙','🧛','🧟','🧜','🧝','🥷','👩‍🚀','👨‍🚀','🧑‍💼','👩‍💼','🧑‍🎨','👩‍🎨','🧑‍🍳','👩‍🔬','🦊','🐯','🦁','🐻','🐼','🐨','🦝','🦋','🐙','🦄','🐲','🦅','🎭','🎪','🎯','🔥','💎','🚀','⚡','🌈','🍀','⭐','🏆','💫','🎸','🎮','🏄','🧗','🤺','🏋️'];
+
+function getAvatar(name){
+  return localStorage.getItem('em_avatar_'+name)||null;
+}
+function saveAvatar(name,emoji){
+  localStorage.setItem('em_avatar_'+name,emoji);
+}
+
+function buildAvatarPicker(name){
+  const grid=document.getElementById('avatar-grid');
+  const current=getAvatar(name);
+  if(!grid) return;
+  grid.innerHTML='';
+  AVATARS.forEach(av=>{
+    const d=document.createElement('div');
+    d.className='av-opt'+(current===av?' selected':'');
+    d.textContent=av;
+    d.onclick=()=>selectAvatar(name,av,d);
+    grid.appendChild(d);
+  });
+  // Update current display
+  const currentEmoji=current||'😀';
+  document.getElementById('av-current-emoji').textContent=currentEmoji;
+}
+
+function selectAvatar(name,emoji,el){
+  saveAvatar(name,emoji);
+  document.querySelectorAll('.av-opt').forEach(d=>d.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('av-current-emoji').textContent=emoji;
+  buildTurns();
+  buildBizumConfirm();
+  showToast('Avatar guardado ✅');
+}
+
+function getAvatarHTML(name,idx){
+  const emoji=getAvatar(name);
+  if(emoji) return `<span style="font-size:26px;width:36px;text-align:center;flex-shrink:0;">${emoji}</span>`;
+  // Fallback initials
+  const bg=['#BBCFE8','#B8D89A','#F0C880','#F0B8CE','#C5C2EE'][idx%5];
+  const fg=['#0C447C','#3B6D11','#854F0B','#7A2443','#534AB7'][idx%5];
+  return `<div style="width:36px;height:36px;border-radius:50%;background:${bg};color:${fg};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">${name.slice(0,2).toUpperCase()}</div>`;
 }
 
 // ── WA HELPERS ───────────────────────────────────────────────────────────────
