@@ -438,6 +438,29 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
     </div>
   </div>
 
+  <div class="card">
+    <div class="card-label">Importes</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--border);">
+      <span style="font-size:13px;color:var(--text2);">Coste del boleto</span>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:15px;font-weight:700;color:var(--text);">€</span>
+        <input type="number" id="grupo-ticket-cost" min="1" max="500" step="0.5"
+          style="width:70px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);background:var(--surface2);font-size:15px;font-weight:700;color:var(--text);text-align:right;font-family:inherit;outline:none;"
+          onchange="recalcFromCost()">
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;">
+      <span style="font-size:13px;color:var(--text2);">Bizum por persona</span>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span style="font-size:15px;font-weight:700;color:var(--text);">€</span>
+        <input type="number" id="grupo-bizum" min="0.5" max="100" step="0.5"
+          style="width:70px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--border2);background:var(--surface2);font-size:15px;font-weight:700;color:var(--text);text-align:right;font-family:inherit;outline:none;"
+          onchange="saveImportes()">
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text3);margin-top:4px;">Se actualiza al añadir o eliminar miembros</div>
+  </div>
+
 </div><div class="avatar-popup-overlay" id="av-overlay" onclick="closeAvatarPopup()"></div>
 <div class="avatar-popup" id="av-popup">
   <div class="avatar-popup-title" id="av-popup-title">Elige tu avatar</div>
@@ -704,7 +727,7 @@ function checkPrize(){
     +'\n\n✅ Aciertos: *'+hitM.join(', ')+'*'+(hitS.length?'  ·  Estrellas: *'+hitS.join(', ')+'*':'')
     +'\n'+lineSep
     +'\n💳 Paga esta ronda: *'+payer+'*'
-    +'\n💸 Bizum de *4€* a '+payer+':'
+    +'\n💸 Bizum de *'+getBizumAmount()+'€* a '+payer+':'
     +'\n'+others.map(o=>'   · '+o).join('\n');
   document.getElementById('wa-text').textContent=msg; lastWAMsg=msg;
   document.getElementById('result-area').style.display='block';
@@ -966,8 +989,12 @@ function removeMember(i){
   if(!confirm(`¿Eliminar a ${people[i]}?`)) return;
   people.splice(i,1);
   savePeople(people);
+  // Recalc bizum
+  const newBizum2=(getTicketCost()/people.length).toFixed(2);
+  localStorage.setItem('em_bizum',newBizum2);
+  const bi2=document.getElementById('grupo-bizum');if(bi2)bi2.value=newBizum2;
   buildMembers();buildTurns();buildBizumConfirm();buildWABizum();
-  showToast('Miembro eliminado');
+  showToast(`Miembro eliminado · Bizum actualizado a ${newBizum2}€`);
 }
 
 function addMemberFromGrupo(){
@@ -979,9 +1006,13 @@ function addMemberFromGrupo(){
   if(people.length>=12){showToast('Máximo 12 miembros');return;}
   people.push(name);
   savePeople(people);
+  // Recalc bizum
+  const newBizum=(getTicketCost()/people.length).toFixed(2);
+  localStorage.setItem('em_bizum',newBizum);
+  const bi=document.getElementById('grupo-bizum');if(bi)bi.value=newBizum;
   input.value='';
   buildMembers();buildTurns();buildBizumConfirm();buildWABizum();
-  showToast(`✅ ${name} añadido`);
+  showToast(`✅ ${name} añadido · Bizum actualizado a ${newBizum}€`);
 }
 
 
@@ -1509,6 +1540,38 @@ function saveName(){
   buildTurns();
   buildWABizum();
   showToast('✅ Nombre actualizado');
+}
+
+// ── IMPORTES ──────────────────────────────────────────────────────────────────
+function getTicketCost(){return parseFloat(localStorage.getItem('em_ticket_cost'))||20;}
+function getBizumAmount(){return parseFloat(localStorage.getItem('em_bizum'))||4;}
+
+function saveImportes(){
+  const cost=parseFloat(document.getElementById('grupo-ticket-cost')?.value)||20;
+  const bizum=parseFloat(document.getElementById('grupo-bizum')?.value)||4;
+  localStorage.setItem('em_ticket_cost',cost);
+  localStorage.setItem('em_bizum',bizum);
+  buildTurns();buildBizumConfirm();buildWABizum();
+  showToast('✅ Importes actualizados');
+}
+
+function recalcFromCost(){
+  const cost=parseFloat(document.getElementById('grupo-ticket-cost')?.value)||20;
+  const people=getSavedPeople();
+  const bizum=(cost/(people.length)).toFixed(2);
+  localStorage.setItem('em_ticket_cost',cost);
+  localStorage.setItem('em_bizum',bizum);
+  const bizumInput=document.getElementById('grupo-bizum');
+  if(bizumInput) bizumInput.value=bizum;
+  buildTurns();buildBizumConfirm();buildWABizum();
+  showToast('✅ Importes actualizados');
+}
+
+function renderImportes(){
+  const costInput=document.getElementById('grupo-ticket-cost');
+  const bizumInput=document.getElementById('grupo-bizum');
+  if(costInput) costInput.value=getTicketCost();
+  if(bizumInput) bizumInput.value=getBizumAmount();
 }
 
 // ── WA HELPERS ───────────────────────────────────────────────────────────────
