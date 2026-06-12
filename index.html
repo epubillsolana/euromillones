@@ -166,12 +166,6 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
 
 <!-- ── COMPROBAR ─────────────────────────────────────────────────────────── -->
 <div class="section active" id="tab-comprobar">
-  <div id="top-result-banner" style="display:none;border-radius:16px;padding:16px;margin-bottom:12px;text-align:center;">
-    <div id="top-result-emoji" style="font-size:40px;margin-bottom:8px;">🎰</div>
-    <div id="top-result-title" style="font-size:18px;font-weight:800;margin-bottom:4px;"></div>
-    <div id="top-result-amount" style="font-size:28px;font-weight:800;display:none;margin-bottom:4px;"></div>
-    <div id="top-result-sub" style="font-size:13px;opacity:.7;"></div>
-  </div>
   <div class="card">
     <div class="card-label">Nuestros números</div>
     <div class="ball-row">
@@ -187,11 +181,17 @@ select{width:100%;padding:10px 12px;border-radius:var(--radius-sm);border:.5px s
     <button class="btn btn-blue" id="btn-check" onclick="checkPrize()" disabled>Comprobar premio</button>
   </div>
   <div id="result-area" style="display:none;">
-    <div id="prize-box" class="prize-box none">
-      <div id="prize-emoji" class="prize-emoji">🎱</div>
-      <div id="prize-title" class="prize-title none">—</div>
-      <div id="prize-amount" class="prize-amount" style="display:none;"></div>
-      <div id="prize-sub" class="prize-sub">—</div>
+      <div id="top-result-banner" style="display:none;border-radius:16px;padding:16px;margin-bottom:12px;text-align:center;">
+        <div id="top-result-emoji" style="font-size:40px;margin-bottom:8px;">🎰</div>
+        <div id="top-result-title" style="font-size:18px;font-weight:800;margin-bottom:4px;"></div>
+        <div id="top-result-amount" style="font-size:28px;font-weight:800;display:none;margin-bottom:4px;"></div>
+        <div id="top-result-sub" style="font-size:13px;opacity:.7;"></div>
+      </div>
+    <div id="prize-box" style="display:none;">
+      <div id="prize-emoji"></div>
+      <div id="prize-title"></div>
+      <div id="prize-amount"></div>
+      <div id="prize-sub"></div>
       <div id="hit-balls" class="ball-row" style="margin-top:14px;"></div>
     </div>
     <div id="add-to-total-box" style="display:none;" class="card">
